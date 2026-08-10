@@ -1,0 +1,33 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --color-ink: #1a1712;
+  --color-ink-soft: #322c22;
+  --color-paper: #fbf8f2;
+  --color-paper-soft: #f4ecdb;
+  --color-brass: #e39a1f;
+  --color-brass-soft: #f6c567;
+  --color-brass-deep: #b87309;
+  --color-border: #ecdfc4;
+  --color-muted: #6b6558;
+}
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-paper: var(--color-paper);
+  --color-paper-soft: var(--color-paper-soft);
+  --color-brass: var(--color-brass);
+  --color-brass-soft: var(--color-brass-soft);
+  --color-brass-deep: var(--color-brass-deep);
+  --color-border: var(--color-border);
+  --color-muted: var(--color-muted);
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
