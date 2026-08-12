@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { siteConfig } from "@/lib/site-config";
+import { PreconnectHints } from "@/components/seo/PreconnectHints";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,7 +26,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="vi" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <PreconnectHints />
+        {children}
+      </body>
     </html>
   );
 }

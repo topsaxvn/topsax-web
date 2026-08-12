@@ -4,7 +4,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryProductListing } from "@/components/product/CategoryProductListing";
 import { absoluteUrl } from "@/lib/seo";
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 export const metadata: Metadata = {
   title: "Saxophone",
@@ -12,13 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: absoluteUrl("/saxophone") },
 };
 
-export default async function SaxophonePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string; sort?: string }>;
-}) {
-  const { category, sort } = await searchParams;
-
+export default function SaxophonePage() {
   return (
     <Container className="py-12">
       <SectionHeading
@@ -26,7 +20,7 @@ export default async function SaxophonePage({
         title="Saxophone"
         description="Alto, tenor, baritone - saxophone mới và đã qua sử dụng, kiểm tra kỹ trước khi bán."
       />
-      <CategoryProductListing sectionSlug="saxophone" basePath="/saxophone" category={category} sort={sort} />
+      <CategoryProductListing sectionSlug="saxophone" basePath="/saxophone" />
     </Container>
   );
 }

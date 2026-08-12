@@ -5,11 +5,20 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryProductListing } from "@/components/product/CategoryProductListing";
 import { ProductDetailView } from "@/components/product/ProductDetailView";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getCategoryBySlug } from "@/data-access/categories";
-import { getProductBySlug, getRelatedProducts } from "@/data-access/products";
+import { getCategoryBySlug, getChildCategories } from "@/data-access/categories";
+import { getProductBySlug, getProducts, getRelatedProducts } from "@/data-access/products";
 import { breadcrumbJsonLd, categoryMetadata, productJsonLd, productMetadata } from "@/lib/seo";
 
-export const revalidate = 300;
+export const revalidate = 1800;
+
+export async function generateStaticParams() {
+  const [categories, products] = await Promise.all([
+    getChildCategories("phu-kien"),
+    getProducts({ sectionSlug: "phu-kien" }),
+  ]);
+
+  return [...categories.map((c) => ({ slug: c.slug })), ...products.map((p) => ({ slug: p.slug }))];
+}
 
 // Route dùng chung: khớp cả slug category (mouthpiece, reed,...) lẫn slug
 // sản phẩm phụ kiện.
@@ -40,7 +49,7 @@ export default async function PhuKienSlugPage({ params }: PageProps<"/phu-kien/[
           ])}
         />
         <SectionHeading eyebrow="Phụ kiện" title={category.name} description={category.description ?? undefined} />
-        <CategoryProductListing sectionSlug="phu-kien" basePath="/phu-kien" category={slug} />
+        <CategoryProductListing sectionSlug="phu-kien" basePath="/phu-kien" initialCategory={slug} />
       </Container>
     );
   }

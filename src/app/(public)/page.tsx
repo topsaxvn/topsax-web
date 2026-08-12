@@ -10,7 +10,7 @@ import { getProducts } from "@/data-access/products";
 import { getPublishedPosts } from "@/data-access/posts";
 import { siteConfig } from "@/lib/site-config";
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 export const metadata: Metadata = {
   alternates: { canonical: siteConfig.url },
