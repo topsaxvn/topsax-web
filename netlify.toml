@@ -1,0 +1,7 @@
+[build]
+  # Netlify's Edge Functions bundler (dùng cho proxy.ts) chưa tương thích với
+  # output Turbopack của Next.js 16 - build bằng Webpack riêng cho Netlify.
+  command = "npx next build --webpack"
+
+[build.environment]
+  NODE_VERSION = "22"

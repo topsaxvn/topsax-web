@@ -2,7 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 
-export async function proxy(request: NextRequest) {
+// Next.js 16 đổi tên quy ước file này thành "proxy.ts", nhưng vẫn giữ
+// "middleware.ts" hoạt động (chỉ deprecated). Dùng tên cũ vì
+// @netlify/plugin-nextjs (bản mới nhất khi viết) chưa bundle đúng
+// Edge Function khi dùng "proxy.ts" - lỗi "Cannot find module
+// './webpack-runtime.js'" khi build trên Netlify. Đổi lại "proxy.ts" khi
+// plugin cập nhật hỗ trợ.
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(
