@@ -5,7 +5,7 @@ import { PostGrid } from "@/components/blog/PostGrid";
 import { getPublishedPosts } from "@/data-access/posts";
 import { absoluteUrl } from "@/lib/seo";
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 export const metadata: Metadata = {
   title: "Blog",

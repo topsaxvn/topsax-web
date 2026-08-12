@@ -4,7 +4,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryProductListing } from "@/components/product/CategoryProductListing";
 import { absoluteUrl } from "@/lib/seo";
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 export const metadata: Metadata = {
   title: "Phụ kiện",
@@ -12,13 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: absoluteUrl("/phu-kien") },
 };
 
-export default async function PhuKienPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string; sort?: string }>;
-}) {
-  const { category, sort } = await searchParams;
-
+export default function PhuKienPage() {
   return (
     <Container className="py-12">
       <SectionHeading
@@ -26,7 +20,7 @@ export default async function PhuKienPage({
         title="Phụ kiện"
         description="Mouthpiece, reed, ligature, case và các phụ kiện saxophone khác."
       />
-      <CategoryProductListing sectionSlug="phu-kien" basePath="/phu-kien" category={category} sort={sort} />
+      <CategoryProductListing sectionSlug="phu-kien" basePath="/phu-kien" />
     </Container>
   );
 }

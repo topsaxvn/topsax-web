@@ -6,6 +6,7 @@ import { ProductGrid } from "@/components/product/ProductGrid";
 import type { ProductDetail, ProductSummary } from "@/data-access/products";
 import { conditionLabel, formatPrice, statusLabel } from "@/lib/utils/format";
 import { siteConfig } from "@/lib/site-config";
+import { cloudinaryLoader } from "@/lib/utils/cloudinary-loader";
 
 function isPlainSpecValue(value: unknown): value is string | number | boolean {
   return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
@@ -34,6 +35,7 @@ export function ProductDetailView({
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-cover"
                 priority
+                loader={cloudinaryLoader}
               />
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-muted">Chưa có ảnh</div>
@@ -58,6 +60,7 @@ export function ProductDetailView({
                     fill
                     sizes="12vw"
                     className="object-cover"
+                    loader={cloudinaryLoader}
                   />
                 </div>
               ))}

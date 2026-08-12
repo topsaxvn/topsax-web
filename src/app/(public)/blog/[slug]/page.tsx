@@ -3,10 +3,15 @@ import type { Metadata } from "next";
 import { marked } from "marked";
 import { Container } from "@/components/ui/Container";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getPostBySlug } from "@/data-access/posts";
+import { getPostBySlug, getPublishedPosts } from "@/data-access/posts";
 import { articleJsonLd, breadcrumbJsonLd, postMetadata } from "@/lib/seo";
 
-export const revalidate = 300;
+export const revalidate = 1800;
+
+export async function generateStaticParams() {
+  const posts = await getPublishedPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
 export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): Promise<Metadata> {
   const { slug } = await params;

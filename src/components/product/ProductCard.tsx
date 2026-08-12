@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ProductSummary } from "@/data-access/products";
 import { getProductHref } from "@/lib/product-url";
 import { conditionLabel, formatPrice } from "@/lib/utils/format";
+import { cloudinaryLoader } from "@/lib/utils/cloudinary-loader";
 
 export function ProductCard({ product }: { product: ProductSummary }) {
   const isSold = product.status === "sold";
@@ -20,6 +21,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
             className="object-cover"
+            loader={cloudinaryLoader}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-muted">

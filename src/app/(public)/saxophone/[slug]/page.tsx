@@ -5,11 +5,20 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryProductListing } from "@/components/product/CategoryProductListing";
 import { ProductDetailView } from "@/components/product/ProductDetailView";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getCategoryBySlug } from "@/data-access/categories";
-import { getProductBySlug, getRelatedProducts } from "@/data-access/products";
+import { getCategoryBySlug, getChildCategories } from "@/data-access/categories";
+import { getProductBySlug, getProducts, getRelatedProducts } from "@/data-access/products";
 import { breadcrumbJsonLd, categoryMetadata, productJsonLd, productMetadata } from "@/lib/seo";
 
-export const revalidate = 300;
+export const revalidate = 1800;
+
+export async function generateStaticParams() {
+  const [categories, products] = await Promise.all([
+    getChildCategories("saxophone"),
+    getProducts({ sectionSlug: "saxophone" }),
+  ]);
+
+  return [...categories.map((c) => ({ slug: c.slug })), ...products.map((p) => ({ slug: p.slug }))];
+}
 
 // Route dùng chung: khớp cả slug category (alto, tenor, baritone) lẫn slug
 // sản phẩm (vd. yamaha-yas-62) - xem ghi chú kiến trúc ở phase trước.
@@ -40,7 +49,7 @@ export default async function SaxophoneSlugPage({ params }: PageProps<"/saxophon
           ])}
         />
         <SectionHeading eyebrow="Saxophone" title={category.name} description={category.description ?? undefined} />
-        <CategoryProductListing sectionSlug="saxophone" basePath="/saxophone" category={slug} />
+        <CategoryProductListing sectionSlug="saxophone" basePath="/saxophone" initialCategory={slug} />
       </Container>
     );
   }
