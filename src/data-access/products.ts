@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { getCategoryBySlug, getSectionCategoryIds } from "@/data-access/categories";
 import type { Database } from "@/types/database";
 
@@ -47,7 +49,7 @@ export type ProductFilters = {
 };
 
 export async function getProducts(filters: ProductFilters = {}): Promise<ProductSummary[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   let query = supabase.from("products").select(LIST_SELECT);
 
   if (filters.sectionSlug) {
@@ -113,8 +115,10 @@ export async function getFeaturedProducts(limit = 4): Promise<ProductSummary[]> 
   return (data as WithRelations[]).map(toSummary);
 }
 
-export async function getProductBySlug(slug: string): Promise<ProductDetail | null> {
-  const supabase = await createClient();
+// cache(): generateMetadata() và page component cùng gọi hàm này với slug
+// giống nhau trong 1 request - dedupe để chỉ query Supabase 1 lần.
+export const getProductBySlug = cache(async (slug: string): Promise<ProductDetail | null> => {
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("products")
     .select(LIST_SELECT)
@@ -125,7 +129,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
   if (!data) return null;
 
   return toSummary(data as WithRelations);
-}
+});
 
 export async function searchProductsAdmin(filters: {
   q?: string;
@@ -177,7 +181,7 @@ export async function getProductById(id: string): Promise<ProductDetail | null> 
 export async function getRelatedProducts(product: ProductDetail, limit = 4): Promise<ProductSummary[]> {
   if (!product.category_id) return [];
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("products")
     .select(LIST_SELECT)

@@ -6,6 +6,8 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { getPostBySlug } from "@/data-access/posts";
 import { articleJsonLd, breadcrumbJsonLd, postMetadata } from "@/lib/seo";
 
+export const revalidate = 300;
+
 export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlug(slug);

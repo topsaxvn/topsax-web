@@ -9,6 +9,8 @@ import { getCategoryBySlug } from "@/data-access/categories";
 import { getProductBySlug, getRelatedProducts } from "@/data-access/products";
 import { breadcrumbJsonLd, categoryMetadata, productJsonLd, productMetadata } from "@/lib/seo";
 
+export const revalidate = 300;
+
 // Route dùng chung: khớp cả slug category (alto, tenor, baritone) lẫn slug
 // sản phẩm (vd. yamaha-yas-62) - xem ghi chú kiến trúc ở phase trước.
 export async function generateMetadata({ params }: PageProps<"/saxophone/[slug]">): Promise<Metadata> {
