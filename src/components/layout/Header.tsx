@@ -7,32 +7,18 @@ import { MobileMenu } from "@/components/layout/MobileMenu";
 export function Header() {
   return (
     <header className="relative">
-      <div className="hidden bg-paper-soft text-ink-soft lg:block">
-        <Container className="flex h-9 items-center justify-between text-xs">
-          <p>{siteConfig.tagline}</p>
-          <div className="flex items-center gap-5">
-            <a href={`mailto:${siteConfig.email}`} className="hover:text-ink">
-              {siteConfig.email}
-            </a>
-            <a href={siteConfig.phoneHref} className="font-medium hover:text-ink">
-              {siteConfig.phone}
-            </a>
-          </div>
-        </Container>
-      </div>
-
       <div className="border-b border-brass-deep/20 bg-brass">
-        <Container className="flex h-16 items-center justify-between lg:h-[72px]">
+        <Container className="flex h-20 items-center justify-between lg:h-24">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/brand/topsax-logo.png"
+              src="/brand/topsax-icon.png"
               alt={siteConfig.name}
-              width={40}
-              height={39}
-              className="rounded-full"
+              width={200}
+              height={180}
+              className="h-10 w-auto invert lg:h-12"
               priority
             />
-            <span className="text-lg font-semibold tracking-wide text-ink">
+            <span className="text-2xl font-bold tracking-wide text-ink lg:text-2xl">
               {siteConfig.name}
             </span>
           </Link>
@@ -52,7 +38,15 @@ export function Header() {
             </ul>
           </nav>
 
-          <div className="hidden lg:block">
+          <div className="hidden items-center gap-3 lg:flex">
+            <a
+              href={siteConfig.facebookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full border border-ink/20 px-4 py-2 text-sm font-semibold text-ink hover:bg-ink hover:text-paper"
+            >
+              Nhắn Facebook
+            </a>
             <a
               href={siteConfig.zaloUrl}
               target="_blank"

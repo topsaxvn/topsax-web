@@ -4,14 +4,14 @@ export const siteConfig = {
   name: "TOPSAX",
   tagline: "Chuyên saxophone mới, cũ và phụ kiện",
   description:
-    "TOPSAX - cửa hàng chuyên saxophone mới, saxophone cũ và phụ kiện. Tư vấn tận tâm, sản phẩm được kiểm tra kỹ trước khi bán.",
+    "TOPSAX - cửa hàng chuyên saxophone mới, saxophone cũ và phụ kiện. Tư vấn tận tâm, sản phẩm chất lượng, giá cả hợp lý",
   url: "https://topsax.example.com",
-  phone: "0000 000 000",
-  phoneHref: "tel:+840000000000",
-  zaloUrl: "https://zalo.me/0000000000",
-  facebookUrl: "https://facebook.com/topsax",
-  email: "contact@topsax.example.com",
-  address: "Đang cập nhật địa chỉ cửa hàng",
+  phone: "0948 364 640",
+  phoneHref: "tel:+84 948 364 640",
+  zaloUrl: "https://zalo.me/0948364640",
+  facebookUrl: "https://www.facebook.com/hoang.trung.514918",
+  email: "topsax.vn@gmail.com",
+  address: "174 Ngô Quyền, Hà Đông, Hà Nội",
 } as const;
 
 export const mainNav = [

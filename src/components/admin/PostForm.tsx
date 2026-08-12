@@ -69,7 +69,7 @@ export function PostForm({
       </FormSection>
 
       <FormSection title="Phân loại & trạng thái">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Chuyên mục">
             <select name="category_id" defaultValue={post?.category?.id ?? ""} className={inputClass}>
               <option value="">-- Chọn chuyên mục --</option>

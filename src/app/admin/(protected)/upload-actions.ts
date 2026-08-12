@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getCloudinaryPublicConfig, signUploadParams } from "@/lib/cloudinary";
+import { destroyCloudinaryAsset, getCloudinaryPublicConfig, signUploadParams } from "@/lib/cloudinary";
 
 export type UploadSignature = {
   timestamp: number;
@@ -32,4 +32,16 @@ export async function getUploadSignature(folder: AllowedFolder): Promise<UploadS
   const { cloudName, apiKey } = getCloudinaryPublicConfig();
 
   return { timestamp, signature, apiKey, cloudName, folder };
+}
+
+// Xoá ảnh đã upload lên Cloudinary nhưng chưa gắn vào sản phẩm nào trong DB -
+// dùng khi admin bỏ ảnh ra khỏi form tạo sản phẩm mới trước khi submit.
+export async function destroyUnattachedImage(publicId: string): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Bạn cần đăng nhập để thực hiện thao tác này.");
+
+  await destroyCloudinaryAsset(publicId);
 }

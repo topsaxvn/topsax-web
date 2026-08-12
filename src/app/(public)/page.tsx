@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 const quickCategories = [
   { label: "Alto", href: "/saxophone/alto" },
   { label: "Tenor", href: "/saxophone/tenor" },
-  { label: "Baritone", href: "/saxophone/baritone" },
+  { label: "Soprano", href: "/saxophone/soprano" },
   { label: "Phụ kiện", href: "/phu-kien" },
 ];
 
@@ -59,12 +59,13 @@ export default async function Home() {
               {siteConfig.tagline}
             </p>
             <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
-              Mọi thứ bạn cần <span className="text-brass">cho cây saxophone</span> của mình
+              Chúng tôi luôn có <span className="text-brass">cây saxophone</span> bạn cần
             </h1>
             <p className="mt-5 max-w-lg text-muted">
               {siteConfig.name} chuyên saxophone mới, saxophone cũ đã qua kiểm tra và phụ kiện
               chính hãng — giúp bạn chọn được cây kèn phù hợp nhất.
             </p>
+              <p className="text-brass">Chúng tôi đảm bảo bạn thở được thì kèn thổi được</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button href="/saxophone" variant="brass">
                 Xem saxophone

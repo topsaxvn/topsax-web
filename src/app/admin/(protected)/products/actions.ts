@@ -139,6 +139,19 @@ function revalidateProductPaths(slug?: string) {
   }
 }
 
+const pendingImageSchema = z.array(z.object({ url: z.string().trim().min(1), publicId: z.string().trim().min(1) }));
+
+function parsePendingImages(formData: FormData): { url: string; publicId: string }[] {
+  const raw = formData.get("pending_images");
+  if (!raw) return [];
+  try {
+    const parsed = pendingImageSchema.safeParse(JSON.parse(raw.toString()));
+    return parsed.success ? parsed.data : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function createProduct(
   _prevState: ProductFormState,
   formData: FormData,
@@ -151,14 +164,29 @@ export async function createProduct(
   const row = buildProductRow(parsed.data);
   if (!row.ok) return { status: "error", message: row.message };
 
+  const images = parsePendingImages(formData);
+
   const supabase = await createClient();
-  const { error } = await supabase.from("products").insert(row.value);
+  const { data: created, error } = await supabase.from("products").insert(row.value).select("id").single();
 
   if (error) {
     return {
       status: "error",
       message: error.code === "23505" ? "Slug đã tồn tại, vui lòng chọn slug khác." : "Có lỗi xảy ra, vui lòng thử lại.",
     };
+  }
+
+  if (images.length > 0) {
+    await supabase.from("product_images").insert(
+      images.map((image, index) => ({
+        product_id: created.id,
+        url: image.url,
+        public_id: image.publicId,
+        alt_text: null,
+        sort_order: index,
+        is_thumbnail: index === 0,
+      })),
+    );
   }
 
   revalidateProductPaths();

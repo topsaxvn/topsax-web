@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import type { Category } from "@/data-access/categories";
 import type { Brand } from "@/data-access/brands";
 import type { ProductDetail } from "@/data-access/products";
@@ -38,12 +38,14 @@ export function ProductForm({
   brands,
   product,
   submitLabel,
+  imagesSection,
 }: {
   action: Action;
   categories: Category[];
   brands: Brand[];
   product?: ProductDetail;
   submitLabel: string;
+  imagesSection?: ReactNode;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const [slug, setSlug] = useState(product?.slug ?? "");
@@ -77,7 +79,7 @@ export function ProductForm({
             className={inputClass}
           />
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Danh mục">
             <select name="category_id" defaultValue={product?.category?.id ?? ""} className={inputClass}>
               <option value="">-- Chọn danh mục --</option>
@@ -99,18 +101,23 @@ export function ProductForm({
             </select>
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Model">
             <input name="model" defaultValue={product?.model ?? ""} className={inputClass} />
           </Field>
           <Field label="SKU">
-            <input name="sku" defaultValue={product?.sku ?? ""} className={inputClass} />
+            <input
+              name="sku"
+              defaultValue={product?.sku ?? ""}
+              placeholder={product ? "" : "Để trống để tự sinh mã (K.../P...)"}
+              className={inputClass}
+            />
           </Field>
         </div>
       </FormSection>
 
       <FormSection title="Giá & tình trạng">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Giá" error={error("price")}>
             <input
               name="price"
@@ -126,7 +133,7 @@ export function ProductForm({
             <input name="currency" defaultValue={product?.currency ?? "VND"} className={inputClass} />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Tình trạng">
             <select name="condition" defaultValue={product?.condition ?? "used"} className={inputClass}>
               {conditions.map((c) => (
@@ -146,7 +153,7 @@ export function ProductForm({
             </select>
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Trạng thái kiểm tra">
             <select
               name="inspection_status"
@@ -161,7 +168,7 @@ export function ProductForm({
             </select>
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Tồn kho">
             <input
               name="stock_quantity"
@@ -171,7 +178,7 @@ export function ProductForm({
               className={inputClass}
             />
           </Field>
-          <label className="mt-6 flex items-center gap-2 text-sm text-ink">
+          <label className="flex items-center gap-2 text-sm text-ink sm:mt-6">
             <input type="checkbox" name="featured" defaultChecked={product?.featured} className="h-4 w-4" />
             Sản phẩm nổi bật
           </label>
@@ -188,7 +195,7 @@ export function ProductForm({
       </FormSection>
 
       <FormSection title="Thông số">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Số serial">
             <input name="serial_number" defaultValue={product?.serial_number ?? ""} className={inputClass} />
           </Field>
@@ -206,6 +213,8 @@ export function ProductForm({
           />
         </Field>
       </FormSection>
+
+      {imagesSection}
 
       <FormSection title="SEO">
         <Field label="Meta title">

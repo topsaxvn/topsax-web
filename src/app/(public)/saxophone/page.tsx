@@ -8,7 +8,7 @@ export const revalidate = 1800;
 
 export const metadata: Metadata = {
   title: "Saxophone",
-  description: "Danh sách saxophone alto, tenor, baritone - mới và đã qua sử dụng.",
+  description: "Danh sách saxophone alto, tenor, soprano - mới và đã qua sử dụng.",
   alternates: { canonical: absoluteUrl("/saxophone") },
 };
 
@@ -18,7 +18,7 @@ export default function SaxophonePage() {
       <SectionHeading
         eyebrow="Danh mục"
         title="Saxophone"
-        description="Alto, tenor, baritone - saxophone mới và đã qua sử dụng, kiểm tra kỹ trước khi bán."
+        description="Alto, tenor, soprano - saxophone mới và đã qua sử dụng, kiểm tra kỹ trước khi bán."
       />
       <CategoryProductListing sectionSlug="saxophone" basePath="/saxophone" />
     </Container>
