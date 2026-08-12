@@ -4,6 +4,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryProductListing } from "@/components/product/CategoryProductListing";
 import { absoluteUrl } from "@/lib/seo";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Saxophone",
   description: "Danh sách saxophone alto, tenor, baritone - mới và đã qua sử dụng.",

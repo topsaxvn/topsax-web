@@ -4,6 +4,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryProductListing } from "@/components/product/CategoryProductListing";
 import { absoluteUrl } from "@/lib/seo";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Phụ kiện",
   description: "Mouthpiece, reed, ligature, case và phụ kiện saxophone chính hãng.",

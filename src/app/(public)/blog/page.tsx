@@ -5,6 +5,8 @@ import { PostGrid } from "@/components/blog/PostGrid";
 import { getPublishedPosts } from "@/data-access/posts";
 import { absoluteUrl } from "@/lib/seo";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Blog",
   description: "Kiến thức, hướng dẫn chọn mua, kiểm tra và bảo quản saxophone.",

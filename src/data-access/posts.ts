@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Database } from "@/types/database";
 
 type PostRow = Database["public"]["Tables"]["posts"]["Row"];
@@ -10,7 +12,7 @@ export type PostSummary = PostRow & {
 const SELECT = "*, category:blog_categories(id,name,slug)";
 
 export async function getPublishedPosts(limit?: number): Promise<PostSummary[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   let query = supabase
     .from("posts")
     .select(SELECT)
@@ -24,8 +26,10 @@ export async function getPublishedPosts(limit?: number): Promise<PostSummary[]> 
   return data as PostSummary[];
 }
 
-export async function getPostBySlug(slug: string): Promise<PostSummary | null> {
-  const supabase = await createClient();
+// cache(): generateMetadata() và page component cùng gọi hàm này với slug
+// giống nhau trong 1 request - dedupe để chỉ query Supabase 1 lần.
+export const getPostBySlug = cache(async (slug: string): Promise<PostSummary | null> => {
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("posts")
     .select(SELECT)
@@ -35,7 +39,7 @@ export async function getPostBySlug(slug: string): Promise<PostSummary | null> {
 
   if (error) throw error;
   return data as PostSummary | null;
-}
+});
 
 export type BlogCategory = Database["public"]["Tables"]["blog_categories"]["Row"];
 

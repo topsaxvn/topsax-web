@@ -9,6 +9,8 @@ import { getCategoryBySlug } from "@/data-access/categories";
 import { getProductBySlug, getRelatedProducts } from "@/data-access/products";
 import { breadcrumbJsonLd, categoryMetadata, productJsonLd, productMetadata } from "@/lib/seo";
 
+export const revalidate = 300;
+
 // Route dùng chung: khớp cả slug category (mouthpiece, reed,...) lẫn slug
 // sản phẩm phụ kiện.
 export async function generateMetadata({ params }: PageProps<"/phu-kien/[slug]">): Promise<Metadata> {
