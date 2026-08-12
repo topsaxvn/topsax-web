@@ -113,83 +113,149 @@ export default async function AdminProductsPage({
         </form>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-paper">
-        <table className="w-full min-w-[920px] text-left text-sm">
-          <thead className="border-b border-border text-xs uppercase text-muted">
-            <tr>
-              <th className="px-4 py-3 font-medium">Ảnh</th>
-              <th className="px-4 py-3 font-medium">Sản phẩm</th>
-              <th className="px-4 py-3 font-medium">Giá</th>
-              <th className="px-4 py-3 font-medium">Tình trạng</th>
-              <th className="px-4 py-3 font-medium">Trạng thái</th>
-              <th className="px-4 py-3 font-medium">Kiểm tra</th>
-              <th className="px-4 py-3 font-medium">Nổi bật</th>
-              <th className="px-4 py-3 font-medium">Hành động</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
+      {products.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-border bg-paper px-4 py-10 text-center text-sm text-muted">
+          Không có sản phẩm nào.
+        </div>
+      ) : (
+        <>
+          {/* Desktop table */}
+          <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-border bg-paper md:block">
+            <table className="w-full min-w-[920px] text-left text-sm">
+              <thead className="border-b border-border text-xs uppercase text-muted">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Ảnh</th>
+                  <th className="px-4 py-3 font-medium">Sản phẩm</th>
+                  <th className="px-4 py-3 font-medium">Giá</th>
+                  <th className="px-4 py-3 font-medium">Tình trạng</th>
+                  <th className="px-4 py-3 font-medium">Trạng thái</th>
+                  <th className="px-4 py-3 font-medium">Kiểm tra</th>
+                  <th className="px-4 py-3 font-medium">Nổi bật</th>
+                  <th className="px-4 py-3 font-medium">Hành động</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {products.map((product) => (
+                  <tr key={product.id}>
+                    <td className="px-4 py-3">
+                      <ProductThumbLightbox images={product.images} name={product.name} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-ink">{product.name}</p>
+                      <p className="text-xs text-muted">
+                        {product.category?.name ?? "Chưa phân loại"}
+                        {product.sku && <span className="ml-1.5 font-mono">#{product.sku}</span>}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3 text-ink">{formatPrice(product.price, product.currency)}</td>
+                    <td className="px-4 py-3 text-ink-soft">{conditionLabel[product.condition]}</td>
+                    <td className="px-4 py-3 text-ink-soft">{statusLabel[product.status]}</td>
+                    <td className="px-4 py-3 text-ink-soft">{inspectionStatusLabel[product.inspection_status]}</td>
+                    <td className="px-4 py-3">{product.featured ? "✓" : ""}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col items-start gap-1.5">
+                        <ProductPrimaryActions product={product} />
+                        <ProductStatusActions product={product} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="mt-6 space-y-3 md:hidden">
             {products.map((product) => (
-              <tr key={product.id}>
-                <td className="px-4 py-3">
-                  <ProductThumbLightbox images={product.images} name={product.name} />
-                </td>
-                <td className="px-4 py-3">
-                  <p className="font-medium text-ink">{product.name}</p>
-                  <p className="text-xs text-muted">{product.category?.name ?? "Chưa phân loại"}</p>
-                </td>
-                <td className="px-4 py-3 text-ink">{formatPrice(product.price, product.currency)}</td>
-                <td className="px-4 py-3 text-ink-soft">{conditionLabel[product.condition]}</td>
-                <td className="px-4 py-3 text-ink-soft">{statusLabel[product.status]}</td>
-                <td className="px-4 py-3 text-ink-soft">{inspectionStatusLabel[product.inspection_status]}</td>
-                <td className="px-4 py-3">{product.featured ? "✓" : ""}</td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link href={`/admin/products/${product.id}/edit`} className="text-brass-deep hover:underline">
-                      Sửa
-                    </Link>
-                    {product.inspection_status !== "passed" && (
-                      <form action={setInspectionStatus.bind(null, product.id, "passed")}>
-                        <button type="submit" className="text-ink-soft hover:underline">
-                          Đánh dấu đạt
-                        </button>
-                      </form>
-                    )}
-                    {product.status !== "sold" && (
-                      <form action={setProductStatus.bind(null, product.id, "sold")}>
-                        <button type="submit" className="text-ink-soft hover:underline">
-                          Đánh dấu đã bán
-                        </button>
-                      </form>
-                    )}
-                    {product.status !== "available" && (
-                      <form action={setProductStatus.bind(null, product.id, "available")}>
-                        <button type="submit" className="text-ink-soft hover:underline">
-                          Còn hàng
-                        </button>
-                      </form>
-                    )}
-                    <form action={deleteProduct.bind(null, product.id)}>
-                      <ConfirmButton
-                        confirmMessage={`Xóa sản phẩm "${product.name}"? Hành động này không thể hoàn tác.`}
-                        className="text-red-600 hover:underline"
-                      >
-                        Xóa
-                      </ConfirmButton>
-                    </form>
+              <div key={product.id} className="rounded-2xl border border-border bg-paper p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <ProductThumbLightbox images={product.images} name={product.name} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-ink">{product.name}</p>
+                      <p className="text-xs text-muted">
+                        {product.category?.name ?? "Chưa phân loại"}
+                        {product.sku && <span className="ml-1.5 font-mono">#{product.sku}</span>}
+                      </p>
+                      <p className="mt-1 font-semibold text-ink">{formatPrice(product.price, product.currency)}</p>
+                    </div>
                   </div>
-                </td>
-              </tr>
+                  <ProductPrimaryActions product={product} />
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
+                  <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
+                    {conditionLabel[product.condition]}
+                  </span>
+                  <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
+                    {statusLabel[product.status]}
+                  </span>
+                  <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
+                    {inspectionStatusLabel[product.inspection_status]}
+                  </span>
+                  {product.featured && (
+                    <span className="rounded-full border border-brass bg-brass/20 px-2 py-0.5 text-brass-deep">
+                      Nổi bật
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 border-t border-border pt-2">
+                  <ProductStatusActions product={product} />
+                </div>
+              </div>
             ))}
-            {products.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-muted">
-                  Không có sản phẩm nào.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Sửa (to, nổi bật) + Xóa (nhỏ hơn) - đặt ở góc trên bên phải của card/hàng.
+function ProductPrimaryActions({ product }: { product: Awaited<ReturnType<typeof searchProductsAdmin>>[number] }) {
+  return (
+    <div className="flex shrink-0 items-center gap-1.5">
+      <Link
+        href={`/admin/products/${product.id}/edit`}
+        className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper hover:bg-ink-soft"
+      >
+        Sửa
+      </Link>
+      <form action={deleteProduct.bind(null, product.id)}>
+        <ConfirmButton
+          confirmMessage={`Xóa sản phẩm "${product.name}"? Hành động này không thể hoàn tác.`}
+          className="rounded-full border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+        >
+          Xóa
+        </ConfirmButton>
+      </form>
+    </div>
+  );
+}
+
+function ProductStatusActions({ product }: { product: Awaited<ReturnType<typeof searchProductsAdmin>>[number] }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
+      {product.inspection_status !== "passed" && (
+        <form action={setInspectionStatus.bind(null, product.id, "passed")}>
+          <button type="submit" className="text-ink-soft hover:underline">
+            Đánh dấu đạt
+          </button>
+        </form>
+      )}
+      {product.status !== "sold" && (
+        <form action={setProductStatus.bind(null, product.id, "sold")}>
+          <button type="submit" className="text-ink-soft hover:underline">
+            Đánh dấu đã bán
+          </button>
+        </form>
+      )}
+      {product.status !== "available" && (
+        <form action={setProductStatus.bind(null, product.id, "available")}>
+          <button type="submit" className="text-ink-soft hover:underline">
+            Còn hàng
+          </button>
+        </form>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { NewProductImageUpload } from "@/components/admin/NewProductImageUpload";
 import { getAllCategories } from "@/data-access/categories";
 import { getAllBrands } from "@/data-access/brands";
 import { createProduct } from "@/app/admin/(protected)/products/actions";
@@ -12,9 +13,14 @@ export default async function NewProductPage() {
   return (
     <div>
       <h1 className="text-xl font-semibold text-ink">Thêm sản phẩm</h1>
-      <p className="mt-1 text-sm text-muted">Sau khi tạo sản phẩm, bạn có thể upload ảnh ở trang sửa sản phẩm.</p>
       <div className="mt-6 max-w-2xl">
-        <ProductForm action={createProduct} categories={categories} brands={brands} submitLabel="Tạo sản phẩm" />
+        <ProductForm
+          action={createProduct}
+          categories={categories}
+          brands={brands}
+          submitLabel="Tạo sản phẩm"
+          imagesSection={<NewProductImageUpload />}
+        />
       </div>
     </div>
   );

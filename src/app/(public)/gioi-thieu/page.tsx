@@ -33,14 +33,15 @@ export default function AboutPage() {
       <SectionHeading
         eyebrow="Giới thiệu"
         title={`Về ${siteConfig.name}`}
-        description="Một cửa hàng chuyên saxophone có kiến thức và uy tín."
+        description="Chúng tôi được thành lập để bạn không phải hoang mang khi chọn saxophone."
       />
 
       <div className="mt-8 max-w-3xl space-y-4 text-ink-soft">
         <p>
-          {siteConfig.name} tập trung vào một lĩnh vực duy nhất: saxophone. Từ saxophone mới,
-          saxophone đã qua sử dụng đến phụ kiện đi kèm như mouthpiece, reed, ligature và case,
-          mỗi sản phẩm đều được chọn lọc và kiểm tra trước khi giới thiệu đến khách hàng.
+          {siteConfig.name} hiểu những gì bạn lo lắng khi chọn cây saxophone đầu tiên và bối rối
+          trước một rừng phụ kiện vì chính chúng tôi đã từng trải qua. Vì vậy chúng tôi sẽ đưa bạn
+          đến lựa chọn tối ưu nhất từ lựa chọn saxophone mới, saxophone đã qua sử dụng đến phụ kiện đi kèm
+          như mouthpiece, reed, ligature và case...
         </p>
         <p>
           Chúng tôi tin rằng việc chọn mua một cây saxophone - đặc biệt là saxophone cũ - cần

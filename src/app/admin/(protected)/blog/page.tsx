@@ -79,70 +79,102 @@ export default async function AdminBlogPage({
         </form>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-paper">
-        <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-border text-xs uppercase text-muted">
-            <tr>
-              <th className="px-4 py-3 font-medium">Bài viết</th>
-              <th className="px-4 py-3 font-medium">Chuyên mục</th>
-              <th className="px-4 py-3 font-medium">Trạng thái</th>
-              <th className="px-4 py-3 font-medium">Ngày đăng</th>
-              <th className="px-4 py-3 font-medium">Hành động</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
+      {posts.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-border bg-paper px-4 py-10 text-center text-sm text-muted">
+          Không có bài viết nào.
+        </div>
+      ) : (
+        <>
+          {/* Desktop table */}
+          <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-border bg-paper md:block">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="border-b border-border text-xs uppercase text-muted">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Bài viết</th>
+                  <th className="px-4 py-3 font-medium">Chuyên mục</th>
+                  <th className="px-4 py-3 font-medium">Trạng thái</th>
+                  <th className="px-4 py-3 font-medium">Ngày đăng</th>
+                  <th className="px-4 py-3 font-medium">Hành động</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {posts.map((post) => (
+                  <tr key={post.id}>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-ink">{post.title}</p>
+                      <p className="text-xs text-muted">/blog/{post.slug}</p>
+                    </td>
+                    <td className="px-4 py-3 text-ink-soft">{post.category?.name ?? "-"}</td>
+                    <td className="px-4 py-3 text-ink-soft">{postStatusLabel[post.status]}</td>
+                    <td className="px-4 py-3 text-ink-soft">
+                      {post.published_at ? new Date(post.published_at).toLocaleDateString("vi-VN") : "-"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <PostActions post={post} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="mt-6 space-y-3 md:hidden">
             {posts.map((post) => (
-              <tr key={post.id}>
-                <td className="px-4 py-3">
-                  <p className="font-medium text-ink">{post.title}</p>
-                  <p className="text-xs text-muted">/blog/{post.slug}</p>
-                </td>
-                <td className="px-4 py-3 text-ink-soft">{post.category?.name ?? "-"}</td>
-                <td className="px-4 py-3 text-ink-soft">{postStatusLabel[post.status]}</td>
-                <td className="px-4 py-3 text-ink-soft">
-                  {post.published_at ? new Date(post.published_at).toLocaleDateString("vi-VN") : "-"}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Link href={`/admin/blog/${post.id}/edit`} className="text-brass-deep hover:underline">
-                      Sửa
-                    </Link>
-                    {post.status !== "published" && (
-                      <form action={setPostStatus.bind(null, post.id, post.slug, "published")}>
-                        <button type="submit" className="text-ink-soft hover:underline">
-                          Xuất bản
-                        </button>
-                      </form>
-                    )}
-                    {post.status !== "archived" && (
-                      <form action={setPostStatus.bind(null, post.id, post.slug, "archived")}>
-                        <button type="submit" className="text-ink-soft hover:underline">
-                          Lưu trữ
-                        </button>
-                      </form>
-                    )}
-                    <form action={deletePost.bind(null, post.id, post.slug)}>
-                      <ConfirmButton
-                        confirmMessage={`Xóa bài viết "${post.title}"?`}
-                        className="text-red-600 hover:underline"
-                      >
-                        Xóa
-                      </ConfirmButton>
-                    </form>
-                  </div>
-                </td>
-              </tr>
+              <div key={post.id} className="rounded-2xl border border-border bg-paper p-3">
+                <p className="font-medium text-ink">{post.title}</p>
+                <p className="text-xs text-muted">/blog/{post.slug}</p>
+                <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
+                  <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
+                    {post.category?.name ?? "Chưa phân loại"}
+                  </span>
+                  <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
+                    {postStatusLabel[post.status]}
+                  </span>
+                  <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
+                    {post.published_at ? new Date(post.published_at).toLocaleDateString("vi-VN") : "Chưa đăng"}
+                  </span>
+                </div>
+                <div className="mt-3 border-t border-border pt-2">
+                  <PostActions post={post} />
+                </div>
+              </div>
             ))}
-            {posts.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted">
-                  Không có bài viết nào.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function PostActions({ post }: { post: Awaited<ReturnType<typeof searchPostsAdmin>>[number] }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
+      <Link href={`/admin/blog/${post.id}/edit`} className="text-brass-deep hover:underline">
+        Sửa
+      </Link>
+      {post.status !== "published" && (
+        <form action={setPostStatus.bind(null, post.id, post.slug, "published")}>
+          <button type="submit" className="text-ink-soft hover:underline">
+            Xuất bản
+          </button>
+        </form>
+      )}
+      {post.status !== "archived" && (
+        <form action={setPostStatus.bind(null, post.id, post.slug, "archived")}>
+          <button type="submit" className="text-ink-soft hover:underline">
+            Lưu trữ
+          </button>
+        </form>
+      )}
+      <form action={deletePost.bind(null, post.id, post.slug)}>
+        <ConfirmButton
+          confirmMessage={`Xóa bài viết "${post.title}"?`}
+          className="text-red-600 hover:underline"
+        >
+          Xóa
+        </ConfirmButton>
+      </form>
     </div>
   );
 }
