@@ -1,4 +1,4 @@
-import type { ProductCondition, ProductInspectionStatus, ProductStatus } from "@/types/database";
+import type { ProductCondition, ProductInspectionStatus, ProductStatus, PostStatus } from "@/types/database";
 
 export function formatPrice(price: number, currency = "VND") {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency }).format(price);
@@ -22,4 +22,10 @@ export const inspectionStatusLabel: Record<ProductInspectionStatus, string> = {
   in_progress: "Đang kiểm tra",
   passed: "Đạt - sẵn sàng bán",
   failed: "Không đạt",
+};
+
+export const postStatusLabel: Record<PostStatus, string> = {
+  draft: "Nháp",
+  published: "Đã xuất bản",
+  archived: "Lưu trữ",
 };

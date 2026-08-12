@@ -2,17 +2,16 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { marked } from "marked";
 import { Container } from "@/components/ui/Container";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getPostBySlug } from "@/data-access/posts";
+import { articleJsonLd, breadcrumbJsonLd, postMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) return {};
 
-  return {
-    title: post.meta_title ?? post.title,
-    description: post.meta_description ?? post.excerpt ?? undefined,
-  };
+  return postMetadata(post, `/blog/${slug}`);
 }
 
 export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">) {
@@ -31,6 +30,14 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
 
   return (
     <Container className="py-12">
+      <JsonLd data={articleJsonLd(post, `/blog/${slug}`)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Trang chủ", path: "/" },
+          { name: "Blog", path: "/blog" },
+          { name: post.title, path: `/blog/${slug}` },
+        ])}
+      />
       <article className="mx-auto max-w-3xl">
         {post.category && (
           <p className="text-xs font-semibold uppercase tracking-wide text-brass-deep">

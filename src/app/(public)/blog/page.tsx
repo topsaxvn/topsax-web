@@ -3,10 +3,12 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PostGrid } from "@/components/blog/PostGrid";
 import { getPublishedPosts } from "@/data-access/posts";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Blog",
   description: "Kiến thức, hướng dẫn chọn mua, kiểm tra và bảo quản saxophone.",
+  alternates: { canonical: absoluteUrl("/blog") },
 };
 
 export default async function BlogPage() {

@@ -150,6 +150,20 @@ export async function searchProductsAdmin(filters: {
   return (data as WithRelations[]).map(toSummary);
 }
 
+export type ProductImageRow = Database["public"]["Tables"]["product_images"]["Row"];
+
+export async function getProductImages(productId: string): Promise<ProductImageRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("product_images")
+    .select("*")
+    .eq("product_id", productId)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
 export async function getProductById(id: string): Promise<ProductDetail | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("products").select(LIST_SELECT).eq("id", id).maybeSingle();

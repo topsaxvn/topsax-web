@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -8,6 +9,10 @@ import { PostGrid } from "@/components/blog/PostGrid";
 import { getProducts } from "@/data-access/products";
 import { getPublishedPosts } from "@/data-access/posts";
 import { siteConfig } from "@/lib/site-config";
+
+export const metadata: Metadata = {
+  alternates: { canonical: siteConfig.url },
+};
 
 const quickCategories = [
   { label: "Alto", href: "/saxophone/alto" },

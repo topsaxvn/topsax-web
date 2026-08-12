@@ -3,10 +3,12 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
 import { siteConfig } from "@/lib/site-config";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Giới thiệu",
   description: `Câu chuyện và cam kết của ${siteConfig.name} - cửa hàng chuyên saxophone.`,
+  alternates: { canonical: absoluteUrl("/gioi-thieu") },
 };
 
 const commitments = [

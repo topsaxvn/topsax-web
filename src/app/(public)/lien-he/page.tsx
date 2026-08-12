@@ -4,10 +4,12 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { siteConfig } from "@/lib/site-config";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Liên hệ",
   description: `Liên hệ ${siteConfig.name} qua điện thoại, Zalo, Facebook hoặc form liên hệ.`,
+  alternates: { canonical: absoluteUrl("/lien-he") },
 };
 
 export default function ContactPage() {

@@ -5,3 +5,9 @@
 
 [build.environment]
   NODE_VERSION = "22"
+
+# Khai báo tường minh để đảm bảo Netlify luôn chạy Next.js Runtime (sinh
+# Functions/Edge Functions cho các route server-rendered) kể cả khi build
+# command tuỳ chỉnh khiến auto-detect framework không kích hoạt đúng.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

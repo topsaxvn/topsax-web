@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { destroyCloudinaryAsset } from "@/lib/cloudinary";
 import type { Database, Json } from "@/types/database";
 
 const productSchema = z.object({
@@ -127,11 +128,15 @@ function fieldErrorsFrom(error: z.ZodError): Record<string, string> {
   return result;
 }
 
-function revalidateProductPaths() {
+function revalidateProductPaths(slug?: string) {
   revalidatePath("/admin/products");
   revalidatePath("/");
   revalidatePath("/saxophone");
   revalidatePath("/phu-kien");
+  if (slug) {
+    revalidatePath(`/saxophone/${slug}`);
+    revalidatePath(`/phu-kien/${slug}`);
+  }
 }
 
 export async function createProduct(
@@ -206,4 +211,72 @@ export async function setInspectionStatus(
   const supabase = await createClient();
   await supabase.from("products").update({ inspection_status }).eq("id", id);
   revalidateProductPaths();
+}
+
+export async function attachProductImage(
+  productId: string,
+  slug: string,
+  image: { url: string; publicId: string; altText: string | null },
+) {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("product_images")
+    .select("*", { count: "exact", head: true })
+    .eq("product_id", productId);
+
+  const { error } = await supabase.from("product_images").insert({
+    product_id: productId,
+    url: image.url,
+    public_id: image.publicId,
+    alt_text: image.altText,
+    sort_order: count ?? 0,
+    is_thumbnail: (count ?? 0) === 0,
+  });
+
+  if (error) throw new Error("Không thể lưu ảnh vào cơ sở dữ liệu.");
+  revalidateProductPaths(slug);
+}
+
+export async function deleteProductImage(id: string, publicId: string, productId: string, slug: string) {
+  const supabase = await createClient();
+  const { data: image } = await supabase.from("product_images").select("is_thumbnail").eq("id", id).maybeSingle();
+
+  await supabase.from("product_images").delete().eq("id", id);
+
+  if (image?.is_thumbnail) {
+    const { data: remaining } = await supabase
+      .from("product_images")
+      .select("id")
+      .eq("product_id", productId)
+      .order("sort_order", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (remaining) {
+      await supabase.from("product_images").update({ is_thumbnail: true }).eq("id", remaining.id);
+    }
+  }
+
+  try {
+    await destroyCloudinaryAsset(publicId);
+  } catch {
+    // Ảnh trong DB đã xoá; lỗi xoá trên Cloudinary không nên chặn luồng admin.
+  }
+
+  revalidateProductPaths(slug);
+}
+
+export async function setThumbnailImage(productId: string, imageId: string, slug: string) {
+  const supabase = await createClient();
+  await supabase.from("product_images").update({ is_thumbnail: false }).eq("product_id", productId);
+  await supabase.from("product_images").update({ is_thumbnail: true }).eq("id", imageId);
+  revalidateProductPaths(slug);
+}
+
+export async function reorderProductImages(orderedIds: string[], slug: string) {
+  const supabase = await createClient();
+  await Promise.all(
+    orderedIds.map((id, index) => supabase.from("product_images").update({ sort_order: index }).eq("id", id)),
+  );
+  revalidateProductPaths(slug);
 }

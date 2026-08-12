@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryProductListing } from "@/components/product/CategoryProductListing";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Saxophone",
   description: "Danh sách saxophone alto, tenor, baritone - mới và đã qua sử dụng.",
+  alternates: { canonical: absoluteUrl("/saxophone") },
 };
 
 export default async function SaxophonePage({
