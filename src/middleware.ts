@@ -28,21 +28,26 @@ export async function middleware(request: NextRequest) {
     },
   );
 
+  // getSession() chỉ đọc/giải mã cookie tại chỗ (không gọi mạng tới Supabase
+  // Auth như getUser()) - đánh đổi lấy tốc độ cho mọi request vào /admin/*,
+  // cùng lý do đã chấp nhận ở admin/(protected)/layout.tsx. Đây chỉ là cổng
+  // điều hướng UX; an toàn dữ liệu thực sự nằm ở RLS của Supabase, không phải
+  // ở middleware này.
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const { pathname } = request.nextUrl;
   const isLoginPage = pathname === "/admin/login";
   const isAdminRoute = pathname.startsWith("/admin");
 
-  if (isAdminRoute && !isLoginPage && !user) {
+  if (isAdminRoute && !isLoginPage && !session) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);
   }
 
-  if (isLoginPage && user) {
+  if (isLoginPage && session) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
     return NextResponse.redirect(url);

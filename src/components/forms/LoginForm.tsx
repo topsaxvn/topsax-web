@@ -1,15 +1,37 @@
 "use client";
 
-import { useActionState } from "react";
-import { signIn, type LoginFormState } from "@/app/admin/login/actions";
-
-const initialState: LoginFormState = { status: "idle", message: "" };
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm() {
-  const [state, formAction, pending] = useActionState(signIn, initialState);
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email")?.toString() ?? "";
+    const password = formData.get("password")?.toString() ?? "";
+
+    setPending(true);
+    setMessage("");
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      setMessage("Sai email hoặc mật khẩu.");
+      setPending(false);
+      return;
+    }
+
+    router.push("/admin");
+    router.refresh();
+  }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="email" className="text-sm font-medium text-ink">
           Email
@@ -46,9 +68,9 @@ export function LoginForm() {
         {pending ? "Đang đăng nhập..." : "Đăng nhập"}
       </button>
 
-      {state.status === "error" && (
+      {message && (
         <p aria-live="polite" className="text-sm text-red-600">
-          {state.message}
+          {message}
         </p>
       )}
     </form>

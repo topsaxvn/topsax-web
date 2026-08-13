@@ -2,34 +2,25 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { getUploadSignature, destroyUnattachedImage } from "@/app/admin/(protected)/upload-actions";
-import { uploadToCloudinary } from "@/lib/utils/cloudinary-client";
+import { destroyUnattachedImage } from "@/app/admin/(protected)/upload-actions";
+import { useImageUpload } from "@/lib/utils/useImageUpload";
 import { FormSection } from "@/components/admin/form-fields";
 
 export type PendingImage = { url: string; publicId: string };
 
 // Upload ảnh trực tiếp khi đang tạo sản phẩm mới (chưa có product id) - ảnh
 // lên thẳng Cloudinary, danh sách được giữ ở state và gửi kèm form qua input
-// ẩn "pending_images". Server action sẽ gắn ảnh vào sản phẩm sau khi tạo xong.
+// ẩn "pending_images". Sau khi tạo sản phẩm xong, productsApi.create() gắn
+// ảnh vào sản phẩm.
 export function NewProductImageUpload() {
   const [images, setImages] = useState<PendingImage[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { uploadFiles, uploading, error } = useImageUpload("saxophone/products");
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFiles(files: FileList) {
-    setUploading(true);
-    setError(null);
-    try {
-      for (const file of Array.from(files)) {
-        const signature = await getUploadSignature("saxophone/products");
-        const result = await uploadToCloudinary(file, signature);
-        setImages((prev) => [...prev, { url: result.url, publicId: result.publicId }]);
-      }
-    } catch {
-      setError("Upload ảnh thất bại, vui lòng thử lại.");
-    } finally {
-      setUploading(false);
+    const results = await uploadFiles(Array.from(files));
+    if (results.length > 0) {
+      setImages((prev) => [...prev, ...results.map((r) => ({ url: r.url, publicId: r.publicId }))]);
     }
   }
 
@@ -66,7 +57,7 @@ export function NewProductImageUpload() {
       <input type="hidden" name="pending_images" value={JSON.stringify(images)} readOnly />
 
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted">Ảnh đầu tiên sẽ là ảnh thumbnail.</p>
+        <p className="text-xs text-muted">Ảnh đầu tiên sẽ là ảnh thumbnail. Tối đa 15MB/ảnh.</p>
         <div>
           <input
             ref={inputRef}
