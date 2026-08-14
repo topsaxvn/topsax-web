@@ -1,6 +1,21 @@
 import Link from "next/link";
 import { mainNav, siteConfig } from "@/lib/site-config";
 import { Container } from "@/components/ui/Container";
+import {
+  FacebookIcon,
+  MessengerIcon,
+  TiktokIcon,
+  YoutubeIcon,
+  ZaloIcon,
+} from "@/components/ui/SocialIcons";
+
+const socialLinks = [
+  { label: "Messenger", href: siteConfig.messengerUrl, icon: MessengerIcon },
+  { label: "Zalo", href: siteConfig.zaloUrl, icon: ZaloIcon },
+  { label: "Facebook", href: siteConfig.facebookUrl, icon: FacebookIcon },
+  { label: "TikTok", href: siteConfig.tiktokUrl, icon: TiktokIcon },
+  { label: "YouTube", href: siteConfig.youtubeUrl, icon: YoutubeIcon },
+] as const;
 
 export function Footer() {
   return (
@@ -43,17 +58,21 @@ export function Footer() {
 
         <div>
           <p className="text-sm font-medium text-brass-soft">Kết nối</p>
-          <ul className="mt-3 space-y-2 text-sm text-paper/70">
-            <li>
-              <a href={siteConfig.zaloUrl} target="_blank" rel="noopener noreferrer" className="hover:text-paper">
-                Zalo
-              </a>
-            </li>
-            <li>
-              <a href={siteConfig.facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-paper">
-                Facebook
-              </a>
-            </li>
+          <ul className="mt-3 flex flex-wrap gap-3">
+            {socialLinks.map(({ label, href, icon: Icon }) => (
+              <li key={label}>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  title={label}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-paper/20 text-paper/70 transition-colors hover:border-paper/40 hover:text-paper"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
       </Container>

@@ -38,7 +38,7 @@ const reasons = [
   },
   {
     title: "Hỗ trợ trực tiếp",
-    description: "Liên hệ nhanh qua điện thoại, Zalo hoặc Facebook, phản hồi tận tâm.",
+    description: "Liên hệ nhanh qua điện thoại, Zalo hoặc Messenger, phản hồi tận tâm.",
   },
 ];
 

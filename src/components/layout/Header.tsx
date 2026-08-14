@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { mainNav, siteConfig } from "@/lib/site-config";
 import { MobileMenu } from "@/components/layout/MobileMenu";
+import { MessengerIcon, ZaloIcon } from "@/components/ui/SocialIcons";
 
 export function Header() {
   return (
@@ -40,19 +41,21 @@ export function Header() {
 
           <div className="hidden items-center gap-3 lg:flex">
             <a
-              href={siteConfig.facebookUrl}
+              href={siteConfig.messengerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full border border-ink/20 px-4 py-2 text-sm font-semibold text-ink hover:bg-ink hover:text-paper"
+              className="flex items-center gap-2 rounded-full border border-ink/20 px-4 py-2 text-sm font-semibold text-ink hover:bg-ink hover:text-paper"
             >
-              Nhắn Facebook
+              <MessengerIcon className="h-4 w-4" />
+              Nhắn Messenger
             </a>
             <a
               href={siteConfig.zaloUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full border border-ink/20 px-4 py-2 text-sm font-semibold text-ink hover:bg-ink hover:text-paper"
+              className="flex items-center gap-2 rounded-full border border-ink/20 px-4 py-2 text-sm font-semibold text-ink hover:bg-ink hover:text-paper"
             >
+              <ZaloIcon className="h-4 w-4" />
               Nhắn Zalo
             </a>
           </div>

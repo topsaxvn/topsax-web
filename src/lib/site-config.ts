@@ -10,6 +10,11 @@ export const siteConfig = {
   phoneHref: "tel:+84 948 364 640",
   zaloUrl: "https://zalo.me/0948364640",
   facebookUrl: "https://www.facebook.com/hoang.trung.514918",
+  // TODO: đổi thành đúng username Fanpage/Facebook để link m.me hoạt động chính xác.
+  messengerUrl: "https://m.me/hoang.trung.514918",
+  // TODO: thay bằng link TikTok/YouTube thật của cửa hàng.
+  tiktokUrl: "https://www.tiktok.com/@topsax",
+  youtubeUrl: "https://www.youtube.com/@topsax",
   email: "topsax.vn@gmail.com",
   address: "174 Ngô Quyền, Hà Đông, Hà Nội",
 } as const;

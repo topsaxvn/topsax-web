@@ -6,6 +6,7 @@ import { ProductGrid } from "@/components/product/ProductGrid";
 import type { ProductDetail, ProductSummary } from "@/data-access/products";
 import { conditionLabel, formatPrice, statusLabel } from "@/lib/utils/format";
 import { siteConfig } from "@/lib/site-config";
+import { MessengerIcon } from "@/components/ui/SocialIcons";
 
 function isPlainSpecValue(value: unknown): value is string | number | boolean {
   return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
@@ -105,8 +106,9 @@ export function ProductDetailView({
                 <Button href={siteConfig.zaloUrl} variant="outline">
                   Nhắn Zalo
                 </Button>
-                <Button href={siteConfig.facebookUrl} variant="outline">
-                  Facebook
+                <Button href={siteConfig.messengerUrl} variant="outline">
+                  <MessengerIcon className="h-4 w-4" />
+                  Nhắn Messenger
                 </Button>
               </div>
             </div>
