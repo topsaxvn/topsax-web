@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { PostSummary } from "@/data-access/posts";
-import { cloudinaryLoader } from "@/lib/utils/cloudinary-loader";
 
 export function PostCard({ post }: { post: PostSummary }) {
   const publishedDate = post.published_at
@@ -21,7 +20,6 @@ export function PostCard({ post }: { post: PostSummary }) {
             fill
             sizes="(min-width: 1024px) 33vw, 100vw"
             className="object-cover"
-            loader={cloudinaryLoader}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-muted">
