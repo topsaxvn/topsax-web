@@ -1,16 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getUploadSignature } from "@/app/admin/(protected)/upload-actions";
-import { uploadToCloudinary } from "@/lib/utils/cloudinary-client";
-import {
-  attachProductImage,
-  deleteProductImage,
-  reorderProductImages,
-  setThumbnailImage,
-} from "@/app/admin/(protected)/products/actions";
+import { productImagesApi } from "@/lib/admin-api/product-images";
+import { triggerRevalidate } from "@/lib/admin-api/revalidate";
+import { useImageUpload } from "@/lib/utils/useImageUpload";
 import type { ProductImageRow } from "@/data-access/products";
 
 export function ProductImageManager({
@@ -22,46 +16,38 @@ export function ProductImageManager({
   slug: string;
   images: ProductImageRow[];
 }) {
-  const router = useRouter();
-  const [prevImages, setPrevImages] = useState(images);
   const [items, setItems] = useState(images);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { uploadFiles, uploading, error: uploadError } = useImageUpload("saxophone/products");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  if (images !== prevImages) {
-    setPrevImages(images);
-    setItems(images);
-  }
-
   async function handleFiles(files: FileList) {
-    setUploading(true);
     setError(null);
-    try {
-      for (const file of Array.from(files)) {
-        const signature = await getUploadSignature("saxophone/products");
-        const result = await uploadToCloudinary(file, signature);
-        await attachProductImage(productId, slug, { url: result.url, publicId: result.publicId, altText: null });
+    const results = await uploadFiles(Array.from(files));
+    for (const result of results) {
+      try {
+        await productImagesApi.attach(productId, { url: result.url, publicId: result.publicId, altText: null });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Không thể lưu ảnh vào cơ sở dữ liệu.");
       }
-      router.refresh();
-    } catch {
-      setError("Upload ảnh thất bại, vui lòng thử lại.");
-    } finally {
-      setUploading(false);
+    }
+    if (results.length > 0) {
+      setItems(await productImagesApi.list(productId));
+      triggerRevalidate({ resource: "product", slug });
     }
   }
 
   async function handleDelete(image: ProductImageRow) {
     if (!confirm("Xoá ảnh này?")) return;
     setItems((prev) => prev.filter((i) => i.id !== image.id));
-    await deleteProductImage(image.id, image.public_id, productId, slug);
-    router.refresh();
+    await productImagesApi.remove(image.id, image.public_id, productId);
+    triggerRevalidate({ resource: "product", slug });
   }
 
   async function handleSetThumbnail(image: ProductImageRow) {
     setItems((prev) => prev.map((i) => ({ ...i, is_thumbnail: i.id === image.id })));
-    await setThumbnailImage(productId, image.id, slug);
-    router.refresh();
+    await productImagesApi.setThumbnail(productId, image.id);
+    triggerRevalidate({ resource: "product", slug });
   }
 
   async function move(index: number, direction: -1 | 1) {
@@ -70,8 +56,8 @@ export function ProductImageManager({
     const next = [...items];
     [next[index], next[target]] = [next[target], next[index]];
     setItems(next);
-    await reorderProductImages(next.map((i) => i.id), slug);
-    router.refresh();
+    await productImagesApi.reorder(next.map((i) => i.id));
+    triggerRevalidate({ resource: "product", slug });
   }
 
   return (
@@ -101,7 +87,8 @@ export function ProductImageManager({
         </div>
       </div>
 
-      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      <p className="mt-1 text-xs text-muted">Tối đa 15MB/ảnh.</p>
+      {(error || uploadError) && <p className="mt-2 text-xs text-red-600">{error ?? uploadError}</p>}
 
       {items.length === 0 ? (
         <p className="mt-4 text-sm text-muted">Chưa có ảnh nào.</p>

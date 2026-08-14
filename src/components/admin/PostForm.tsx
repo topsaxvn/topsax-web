@@ -1,15 +1,15 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import type { BlogCategory, PostSummary } from "@/data-access/posts";
-import type { PostFormState } from "@/app/admin/(protected)/blog/actions";
+import { parsePostForm } from "@/lib/validation/post";
+import { zodFieldErrors } from "@/lib/validation/utils";
+import { postsApi } from "@/lib/admin-api/posts";
+import { triggerRevalidate } from "@/lib/admin-api/revalidate";
 import { slugify } from "@/lib/utils/slugify";
 import { Field, FormSection, inputClass } from "@/components/admin/form-fields";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
-
-type Action = (prevState: PostFormState, formData: FormData) => Promise<PostFormState>;
-
-const initialState: PostFormState = { status: "idle", message: "" };
 
 const statuses = [
   { value: "draft", label: "Nháp" },
@@ -18,24 +18,52 @@ const statuses = [
 ];
 
 export function PostForm({
-  action,
   categories,
   post,
   submitLabel,
 }: {
-  action: Action;
   categories: BlogCategory[];
   post?: PostSummary;
   submitLabel: string;
 }) {
-  const [state, formAction, pending] = useActionState(action, initialState);
+  const router = useRouter();
   const [slug, setSlug] = useState(post?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(post));
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const error = (field: string) => state.fieldErrors?.[field];
+  const error = (field: string) => fieldErrors[field];
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const parsed = parsePostForm(new FormData(e.currentTarget));
+    if (!parsed.success) {
+      setFieldErrors(zodFieldErrors(parsed.error));
+      setMessage("Vui lòng kiểm tra lại thông tin.");
+      return;
+    }
+    setFieldErrors({});
+    setPending(true);
+    setMessage("");
+    try {
+      if (post) {
+        await postsApi.update(post.id, parsed.data);
+      } else {
+        await postsApi.create(parsed.data);
+      }
+      triggerRevalidate({ resource: "post", slug: parsed.data.slug });
+      router.push("/admin/blog");
+      router.refresh();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <form action={formAction} className="max-w-2xl space-y-8">
+    <form onSubmit={handleSubmit} className="max-w-2xl space-y-8">
       <FormSection title="Nội dung">
         <Field label="Tiêu đề" error={error("title")}>
           <input
@@ -113,7 +141,7 @@ export function PostForm({
         >
           {pending ? "Đang lưu..." : submitLabel}
         </button>
-        {state.status === "error" && <p className="text-sm text-red-600">{state.message}</p>}
+        {message && <p className="text-sm text-red-600">{message}</p>}
       </div>
     </form>
   );

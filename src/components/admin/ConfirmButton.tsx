@@ -1,22 +1,35 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 export function ConfirmButton({
   confirmMessage,
+  onConfirm,
   children,
   className,
+  disabled,
 }: {
   confirmMessage: string;
+  onConfirm: () => void | Promise<void>;
   children: ReactNode;
   className?: string;
+  disabled?: boolean;
 }) {
+  const [pending, setPending] = useState(false);
+
   return (
     <button
-      type="submit"
+      type="button"
+      disabled={disabled || pending}
       className={className}
-      onClick={(e) => {
-        if (!confirm(confirmMessage)) e.preventDefault();
+      onClick={async () => {
+        if (!confirm(confirmMessage)) return;
+        setPending(true);
+        try {
+          await onConfirm();
+        } finally {
+          setPending(false);
+        }
       }}
     >
       {children}

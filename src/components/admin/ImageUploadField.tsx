@@ -2,8 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { getUploadSignature } from "@/app/admin/(protected)/upload-actions";
-import { uploadToCloudinary } from "@/lib/utils/cloudinary-client";
+import { useImageUpload } from "@/lib/utils/useImageUpload";
 
 export function ImageUploadField({
   name,
@@ -13,26 +12,17 @@ export function ImageUploadField({
 }: {
   name: string;
   label: string;
-  folder: "saxophone/products" | "saxophone/blog";
+  folder: "saxophone/products" | "saxophone/blog" | "saxophone/brands";
   defaultValue?: string | null;
 }) {
   const [url, setUrl] = useState(defaultValue ?? "");
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { uploadFiles, uploading, error, setError } = useImageUpload(folder);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(file: File) {
-    setUploading(true);
     setError(null);
-    try {
-      const signature = await getUploadSignature(folder);
-      const result = await uploadToCloudinary(file, signature);
-      setUrl(result.url);
-    } catch {
-      setError("Upload ảnh thất bại, vui lòng thử lại.");
-    } finally {
-      setUploading(false);
-    }
+    const [result] = await uploadFiles([file]);
+    if (result) setUrl(result.url);
   }
 
   return (
@@ -58,6 +48,7 @@ export function ImageUploadField({
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) void handleFile(file);
+              e.target.value = "";
             }}
           />
           <button

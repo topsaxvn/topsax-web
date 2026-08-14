@@ -1,34 +1,62 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import type { Category } from "@/data-access/categories";
-import type { CategoryFormState } from "@/app/admin/(protected)/categories/actions";
+import { parseCategoryForm } from "@/lib/validation/category";
+import { zodFieldErrors } from "@/lib/validation/utils";
+import { categoriesApi } from "@/lib/admin-api/categories";
+import { triggerRevalidate } from "@/lib/admin-api/revalidate";
 import { slugify } from "@/lib/utils/slugify";
 import { Field, FormSection, inputClass } from "@/components/admin/form-fields";
 
-type Action = (prevState: CategoryFormState, formData: FormData) => Promise<CategoryFormState>;
-
-const initialState: CategoryFormState = { status: "idle", message: "" };
-
 export function CategoryForm({
-  action,
   parentOptions,
   category,
   submitLabel,
 }: {
-  action: Action;
   parentOptions: Category[];
   category?: Category;
   submitLabel: string;
 }) {
-  const [state, formAction, pending] = useActionState(action, initialState);
+  const router = useRouter();
   const [slug, setSlug] = useState(category?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(category));
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const error = (field: string) => state.fieldErrors?.[field];
+  const error = (field: string) => fieldErrors[field];
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const parsed = parseCategoryForm(new FormData(e.currentTarget));
+    if (!parsed.success) {
+      setFieldErrors(zodFieldErrors(parsed.error));
+      setMessage("Vui lòng kiểm tra lại thông tin.");
+      return;
+    }
+    setFieldErrors({});
+    setPending(true);
+    setMessage("");
+    try {
+      if (category) {
+        await categoriesApi.update(category.id, parsed.data);
+      } else {
+        await categoriesApi.create(parsed.data);
+      }
+      triggerRevalidate({ resource: "category" });
+      router.push("/admin/categories");
+      router.refresh();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <form action={formAction} className="max-w-lg space-y-6">
+    <form onSubmit={handleSubmit} className="max-w-lg space-y-6">
       <FormSection title="Thông tin danh mục">
         <Field label="Tên danh mục" error={error("name")}>
           <input
@@ -85,7 +113,7 @@ export function CategoryForm({
         >
           {pending ? "Đang lưu..." : submitLabel}
         </button>
-        {state.status === "error" && <p className="text-sm text-red-600">{state.message}</p>}
+        {message && <p className="text-sm text-red-600">{message}</p>}
       </div>
     </form>
   );

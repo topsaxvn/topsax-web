@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { signOut } from "@/app/admin/actions";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { adminNavItems } from "@/components/admin/admin-nav";
 import { CloseIcon, LogoutIcon, MenuIcon } from "@/components/admin/icons";
 import { cn } from "@/lib/utils/cn";
@@ -19,6 +19,14 @@ function isActive(pathname: string, href: string, exact: boolean) {
 export function AdminShell({ userEmail, children }: { userEmail: string; children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/admin/login");
+    router.refresh();
+  }
 
   return (
     <div className="min-h-screen bg-paper-soft">
@@ -45,12 +53,10 @@ export function AdminShell({ userEmail, children }: { userEmail: string; childre
           <p className="truncate px-3 pb-2 text-xs text-muted" title={userEmail}>
             {userEmail}
           </p>
-          <form action={signOut}>
-            <button type="submit" className={cn(NAV_LINK_BASE, NAV_INACTIVE, "w-full")}>
-              <LogoutIcon width={18} height={18} />
-              Đăng xuất
-            </button>
-          </form>
+          <button type="button" onClick={handleSignOut} className={cn(NAV_LINK_BASE, NAV_INACTIVE, "w-full")}>
+            <LogoutIcon width={18} height={18} />
+            Đăng xuất
+          </button>
         </div>
       </aside>
 
@@ -103,12 +109,10 @@ export function AdminShell({ userEmail, children }: { userEmail: string; childre
               <p className="truncate px-3 pb-2 text-xs text-muted" title={userEmail}>
                 {userEmail}
               </p>
-              <form action={signOut}>
-                <button type="submit" className={cn(NAV_LINK_BASE, NAV_INACTIVE, "w-full")}>
-                  <LogoutIcon width={18} height={18} />
-                  Đăng xuất
-                </button>
-              </form>
+              <button type="button" onClick={handleSignOut} className={cn(NAV_LINK_BASE, NAV_INACTIVE, "w-full")}>
+                <LogoutIcon width={18} height={18} />
+                Đăng xuất
+              </button>
             </div>
           </aside>
         </div>

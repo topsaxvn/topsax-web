@@ -1,16 +1,16 @@
 "use client";
 
-import { useActionState, useState, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import type { Category } from "@/data-access/categories";
 import type { Brand } from "@/data-access/brands";
 import type { ProductDetail } from "@/data-access/products";
-import type { ProductFormState } from "@/app/admin/(protected)/products/actions";
-import { slugify } from "@/lib/utils/slugify";
+import { buildProductRow, parseProductForm, parsePendingImages } from "@/lib/validation/product";
+import { zodFieldErrors } from "@/lib/validation/utils";
+import { productsApi } from "@/lib/admin-api/products";
+import { triggerRevalidate } from "@/lib/admin-api/revalidate";
 import { Field, FormSection, inputClass } from "@/components/admin/form-fields";
-
-type Action = (prevState: ProductFormState, formData: FormData) => Promise<ProductFormState>;
-
-const initialState: ProductFormState = { status: "idle", message: "" };
+import { slugify } from "@/lib/utils/slugify";
 
 const conditions = [
   { value: "new", label: "Mới" },
@@ -33,28 +33,67 @@ const inspectionStatuses = [
 ];
 
 export function ProductForm({
-  action,
   categories,
   brands,
   product,
   submitLabel,
   imagesSection,
 }: {
-  action: Action;
   categories: Category[];
   brands: Brand[];
   product?: ProductDetail;
   submitLabel: string;
   imagesSection?: ReactNode;
 }) {
-  const [state, formAction, pending] = useActionState(action, initialState);
+  const router = useRouter();
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(product));
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const error = (field: string) => state.fieldErrors?.[field];
+  const error = (field: string) => fieldErrors[field];
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    const parsed = parseProductForm(formData);
+    if (!parsed.success) {
+      setFieldErrors(zodFieldErrors(parsed.error));
+      setMessage("Vui lòng kiểm tra lại thông tin.");
+      return;
+    }
+    setFieldErrors({});
+
+    const row = buildProductRow(parsed.data);
+    if (!row.ok) {
+      setMessage(row.message);
+      return;
+    }
+
+    setPending(true);
+    setMessage("");
+    try {
+      if (product) {
+        await productsApi.update(product.id, row.value);
+        triggerRevalidate({ resource: "product", slug: row.value.slug ?? undefined });
+      } else {
+        const pendingImages = parsePendingImages(formData);
+        await productsApi.create(row.value, pendingImages);
+        triggerRevalidate({ resource: "product" });
+      }
+      router.push("/admin/products");
+      router.refresh();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <form action={formAction} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <FormSection title="Thông tin chung">
         <Field label="Tên sản phẩm" error={error("name")}>
           <input
@@ -233,9 +272,8 @@ export function ProductForm({
         >
           {pending ? "Đang lưu..." : submitLabel}
         </button>
-        {state.status === "error" && <p className="text-sm text-red-600">{state.message}</p>}
+        {message && <p className="text-sm text-red-600">{message}</p>}
       </div>
     </form>
   );
 }
-

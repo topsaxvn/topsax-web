@@ -11,7 +11,7 @@ export type UploadSignature = {
   folder: string;
 };
 
-const allowedFolders = ["saxophone/products", "saxophone/blog"] as const;
+const allowedFolders = ["saxophone/products", "saxophone/blog", "saxophone/brands"] as const;
 type AllowedFolder = (typeof allowedFolders)[number];
 
 // Ký tham số upload phía server (cần CLOUDINARY_API_SECRET) rồi trả về cho
