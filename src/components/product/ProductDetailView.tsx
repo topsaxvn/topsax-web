@@ -1,13 +1,11 @@
 import { Container } from "@/components/ui/Container";
-import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { ProductGallery } from "@/components/product/ProductGallery";
+import { ProductContactButtons } from "@/components/product/ProductContactButtons";
 import type { ProductDetail, ProductSummary } from "@/data-access/products";
 import { conditionLabel, isContactForPrice, priceLabel, statusLabel } from "@/lib/utils/format";
-import { siteConfig } from "@/lib/site-config";
-import { MessengerIcon } from "@/components/ui/SocialIcons";
 import { cn } from "@/lib/utils/cn";
 
 function isPlainSpecValue(value: unknown): value is string | number | boolean {
@@ -70,17 +68,8 @@ export function ProductDetailView({
               <p className="text-sm font-medium text-ink">
                 {contactForPrice ? "Liên hệ để nhận giá tốt nhất" : "Bạn quan tâm sản phẩm này?"}
               </p>
-              <div className="mt-3 flex flex-wrap gap-3">
-                <Button href={siteConfig.phoneHref} variant="brass">
-                  Gọi ngay
-                </Button>
-                <Button href={siteConfig.zaloUrl} variant="outline">
-                  Nhắn Zalo
-                </Button>
-                <Button href={siteConfig.messengerUrl} variant="outline">
-                  <MessengerIcon className="h-4 w-4" />
-                  Nhắn Messenger
-                </Button>
+              <div className="mt-3">
+                <ProductContactButtons productName={product.name} />
               </div>
             </div>
           )}
