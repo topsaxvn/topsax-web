@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
+    loader: "custom",
+    loaderFile: "./src/lib/utils/cloudinary-loader.ts",
   },
 };
 

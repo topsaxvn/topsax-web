@@ -76,14 +76,13 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="relative flex items-center justify-center rounded-3xl bg-brass-soft/40 p-10 lg:p-16">
-            <div className="absolute inset-6 rounded-2xl border border-brass/30 lg:inset-10" />
+          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-brass/30 bg-brass-soft/40">
             <Image
-              src="/brand/topsax-mark-white.png"
-              alt="Biểu tượng saxophone TOPSAX"
-              width={280}
-              height={273}
-              className="relative w-48 drop-shadow-sm invert lg:w-64"
+              src="/hero/cua-hang-topsax-showroom.jpg"
+              alt="Kho saxophone trưng bày tại cửa hàng TOPSAX"
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
               priority
             />
           </div>

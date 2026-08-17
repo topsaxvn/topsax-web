@@ -1,13 +1,12 @@
 // Thông tin cửa hàng dùng chung cho Header, Footer, trang Liên hệ, metadata SEO.
-// TODO: thay các giá trị placeholder bằng thông tin thật của cửa hàng trước khi launch.
 export const siteConfig = {
   name: "TOPSAX",
   tagline: "Chuyên saxophone mới, cũ và phụ kiện",
   description:
     "TOPSAX - cửa hàng chuyên saxophone mới, saxophone cũ và phụ kiện. Tư vấn tận tâm, sản phẩm chất lượng, giá cả hợp lý",
-  url: "https://topsax.example.com",
+  url: "https://topsaxvn.vercel.app",
   phone: "0948 364 640",
-  phoneHref: "tel:+84 948 364 640",
+  phoneHref: "tel:+84948364640",
   zaloUrl: "https://zalo.me/0948364640",
   facebookUrl: "https://www.facebook.com/hoang.trung.514918",
   email: "topsax.vn@gmail.com",

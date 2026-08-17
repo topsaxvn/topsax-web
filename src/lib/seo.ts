@@ -123,6 +123,25 @@ export function articleJsonLd(post: PostSummary, path: string) {
   };
 }
 
+// LocalBusiness (MusicStore) cho toàn site - chỉ dùng dữ liệu thật có sẵn
+// trong siteConfig, không thêm openingHours/rating vì chưa xác thực được.
+export function organizationJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "MusicStore",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    image: absoluteUrl("/brand/topsax-logo.png"),
+    telephone: siteConfig.phone,
+    email: siteConfig.email,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: siteConfig.address,
+      addressCountry: "VN",
+    },
+  };
+}
+
 export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
   return {
     "@context": "https://schema.org",
