@@ -34,6 +34,7 @@ export type ProductListFilters = {
   q?: string;
   status?: Database["public"]["Enums"]["product_status"];
   inspectionStatus?: Database["public"]["Enums"]["product_inspection_status"];
+  categoryId?: string;
 };
 
 export const productsApi = {
@@ -42,6 +43,7 @@ export const productsApi = {
     if (filters.q) query = query.ilike("name", `%${filters.q}%`);
     if (filters.status) query = query.eq("status", filters.status);
     if (filters.inspectionStatus) query = query.eq("inspection_status", filters.inspectionStatus);
+    if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
 
     const { data, error } = await query;
     if (error) throw new Error(error.message);
