@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ProductSummary } from "@/data-access/products";
 import { getProductHref } from "@/lib/product-url";
-import { conditionLabel, formatPrice } from "@/lib/utils/format";
+import { conditionLabel, priceLabel } from "@/lib/utils/format";
 
 export function ProductCard({ product }: { product: ProductSummary }) {
   const isSold = product.status === "sold";
@@ -38,7 +38,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
           {conditionLabel[product.condition]}
         </p>
         <h3 className="mt-1 font-semibold text-ink group-hover:text-brass-deep">{product.name}</h3>
-        <p className="mt-2 text-base font-semibold text-ink">{formatPrice(product.price, product.currency)}</p>
+        <p className="mt-2 text-base font-semibold text-ink">{priceLabel(product.price, product.currency)}</p>
       </div>
     </Link>
   );

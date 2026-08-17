@@ -86,6 +86,10 @@ const conditionSchema: Record<ProductDetail["condition"], string> = {
 
 export function productJsonLd(product: ProductDetail, path: string) {
   const url = absoluteUrl(path);
+  // Giá 0đ là quy ước "chưa định giá/liên hệ" nội bộ, không phải giá bán
+  // thật - không đưa vào Offer structured data để tránh Google hiểu nhầm
+  // là hàng miễn phí (xem thêm priceLabel() trong lib/utils/format.ts).
+  const hasRealPrice = product.price > 0;
 
   return {
     "@context": "https://schema.org",
@@ -95,14 +99,16 @@ export function productJsonLd(product: ProductDetail, path: string) {
     sku: product.sku ?? undefined,
     image: product.images.map((img) => img.url),
     brand: product.brand ? { "@type": "Brand", name: product.brand.name } : undefined,
-    offers: {
-      "@type": "Offer",
-      url,
-      priceCurrency: product.currency,
-      price: product.price,
-      availability: product.status === "available" ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
-      itemCondition: conditionSchema[product.condition],
-    },
+    offers: hasRealPrice
+      ? {
+          "@type": "Offer",
+          url,
+          priceCurrency: product.currency,
+          price: product.price,
+          availability: product.status === "available" ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
+          itemCondition: conditionSchema[product.condition],
+        }
+      : undefined,
   };
 }
 

@@ -5,9 +5,10 @@ import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import type { ProductDetail, ProductSummary } from "@/data-access/products";
-import { conditionLabel, formatPrice, statusLabel } from "@/lib/utils/format";
+import { conditionLabel, isContactForPrice, priceLabel, statusLabel } from "@/lib/utils/format";
 import { siteConfig } from "@/lib/site-config";
 import { MessengerIcon } from "@/components/ui/SocialIcons";
+import { cn } from "@/lib/utils/cn";
 
 function isPlainSpecValue(value: unknown): value is string | number | boolean {
   return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
@@ -23,6 +24,7 @@ export function ProductDetailView({
   breadcrumb?: { name: string; path: string }[];
 }) {
   const isSold = product.status === "sold";
+  const contactForPrice = isContactForPrice(product.price);
   const specs = Object.entries(product.specifications ?? {}).filter(([, value]) => isPlainSpecValue(value));
 
   return (
@@ -51,8 +53,8 @@ export function ProductDetailView({
             </p>
           )}
 
-          <p className="mt-4 text-2xl font-semibold text-ink">
-            {formatPrice(product.price, product.currency)}
+          <p className={cn("mt-4 text-2xl font-semibold", contactForPrice ? "text-brass-deep" : "text-ink")}>
+            {priceLabel(product.price, product.currency)}
           </p>
 
           {product.short_description && (
@@ -65,7 +67,9 @@ export function ProductDetailView({
             </div>
           ) : (
             <div className="mt-6">
-              <p className="text-sm font-medium text-ink">Bạn quan tâm sản phẩm này?</p>
+              <p className="text-sm font-medium text-ink">
+                {contactForPrice ? "Liên hệ để nhận giá tốt nhất" : "Bạn quan tâm sản phẩm này?"}
+              </p>
               <div className="mt-3 flex flex-wrap gap-3">
                 <Button href={siteConfig.phoneHref} variant="brass">
                   Gọi ngay

@@ -4,6 +4,17 @@ export function formatPrice(price: number, currency = "VND") {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency }).format(price);
 }
 
+// Giá 0đ dùng như quy ước "chưa định giá/liên hệ" (vd. sản phẩm mới nhập
+// chờ admin cập nhật giá) - không hiển thị "0 ₫" cho khách, thay bằng lời
+// mời liên hệ.
+export function isContactForPrice(price: number): boolean {
+  return price === 0;
+}
+
+export function priceLabel(price: number, currency = "VND"): string {
+  return isContactForPrice(price) ? "Liên hệ để có giá tốt" : formatPrice(price, currency);
+}
+
 export const conditionLabel: Record<ProductCondition, string> = {
   new: "Mới",
   used: "Đã qua sử dụng",
