@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { productsApi } from "@/lib/admin-api/products";
@@ -27,6 +27,22 @@ const inspectionTabs: { value: ProductInspectionStatus | undefined; label: strin
   { value: "passed", label: "Đạt" },
   { value: "failed", label: "Không đạt" },
 ];
+
+const UNCATEGORIZED = "Chưa phân loại";
+
+function groupByCategory(products: ProductSummary[]): [string, ProductSummary[]][] {
+  const groups = new Map<string, ProductSummary[]>();
+  for (const product of products) {
+    const key = product.category?.name ?? UNCATEGORIZED;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(product);
+  }
+  return [...groups.entries()].sort(([a], [b]) => {
+    if (a === UNCATEGORIZED) return 1;
+    if (b === UNCATEGORIZED) return -1;
+    return a.localeCompare(b, "vi");
+  });
+}
 
 export function ProductsPageClient() {
   const searchParams = useSearchParams();
@@ -177,79 +193,93 @@ export function ProductsPageClient() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {products.map((product) => (
-                  <tr key={product.id}>
-                    <td className="px-4 py-3">
-                      <ProductThumbLightbox images={product.images} name={product.name} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-ink">{product.name}</p>
-                      <p className="text-xs text-muted">
-                        {product.category?.name ?? "Chưa phân loại"}
-                        {product.sku && <span className="ml-1.5 font-mono">#{product.sku}</span>}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3 text-ink">{formatPrice(product.price, product.currency)}</td>
-                    <td className="px-4 py-3 text-ink-soft">{conditionLabel[product.condition]}</td>
-                    <td className="px-4 py-3 text-ink-soft">{statusLabel[product.status]}</td>
-                    <td className="px-4 py-3 text-ink-soft">{inspectionStatusLabel[product.inspection_status]}</td>
-                    <td className="px-4 py-3">{product.featured ? "✓" : ""}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col items-start gap-1.5">
-                        <ProductPrimaryActions product={product} onDelete={handleDelete} />
-                        <ProductStatusActions
-                          product={product}
-                          onSetStatus={handleSetStatus}
-                          onSetInspection={handleSetInspection}
-                        />
-                      </div>
-                    </td>
-                  </tr>
+                {groupByCategory(products).map(([categoryName, groupProducts]) => (
+                  <Fragment key={categoryName}>
+                    <tr className="bg-paper-soft">
+                      <td colSpan={8} className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                        {categoryName} <span className="font-normal normal-case text-muted">({groupProducts.length})</span>
+                      </td>
+                    </tr>
+                    {groupProducts.map((product) => (
+                      <tr key={product.id}>
+                        <td className="px-4 py-3">
+                          <ProductThumbLightbox images={product.images} name={product.name} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-ink">{product.name}</p>
+                          <p className="text-xs text-muted">
+                            {product.sku && <span className="font-mono">#{product.sku}</span>}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3 text-ink">{formatPrice(product.price, product.currency)}</td>
+                        <td className="px-4 py-3 text-ink-soft">{conditionLabel[product.condition]}</td>
+                        <td className="px-4 py-3 text-ink-soft">{statusLabel[product.status]}</td>
+                        <td className="px-4 py-3 text-ink-soft">{inspectionStatusLabel[product.inspection_status]}</td>
+                        <td className="px-4 py-3">{product.featured ? "✓" : ""}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col items-start gap-1.5">
+                            <ProductPrimaryActions product={product} onDelete={handleDelete} />
+                            <ProductStatusActions
+                              product={product}
+                              onSetStatus={handleSetStatus}
+                              onSetInspection={handleSetInspection}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
           </div>
 
           {/* Mobile cards */}
-          <div className="mt-6 space-y-3 md:hidden">
-            {products.map((product) => (
-              <div key={product.id} className="rounded-2xl border border-border bg-paper p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 flex-1 items-start gap-3">
-                    <ProductThumbLightbox images={product.images} name={product.name} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-ink">{product.name}</p>
-                      <p className="text-xs text-muted">
-                        {product.category?.name ?? "Chưa phân loại"}
-                        {product.sku && <span className="ml-1.5 font-mono">#{product.sku}</span>}
-                      </p>
-                      <p className="mt-1 font-semibold text-ink">{formatPrice(product.price, product.currency)}</p>
+          <div className="mt-6 space-y-6 md:hidden">
+            {groupByCategory(products).map(([categoryName, groupProducts]) => (
+              <div key={categoryName}>
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                  {categoryName} <span className="font-normal normal-case text-muted">({groupProducts.length})</span>
+                </p>
+                <div className="mt-2 space-y-3">
+                  {groupProducts.map((product) => (
+                    <div key={product.id} className="rounded-2xl border border-border bg-paper p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                          <ProductThumbLightbox images={product.images} name={product.name} />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium text-ink">{product.name}</p>
+                            {product.sku && <p className="text-xs font-mono text-muted">#{product.sku}</p>}
+                            <p className="mt-1 font-semibold text-ink">{formatPrice(product.price, product.currency)}</p>
+                          </div>
+                        </div>
+                        <ProductPrimaryActions product={product} onDelete={handleDelete} />
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
+                        <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
+                          {conditionLabel[product.condition]}
+                        </span>
+                        <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
+                          {statusLabel[product.status]}
+                        </span>
+                        <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
+                          {inspectionStatusLabel[product.inspection_status]}
+                        </span>
+                        {product.featured && (
+                          <span className="rounded-full border border-brass bg-brass/20 px-2 py-0.5 text-brass-deep">
+                            Nổi bật
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-3 border-t border-border pt-2">
+                        <ProductStatusActions
+                          product={product}
+                          onSetStatus={handleSetStatus}
+                          onSetInspection={handleSetInspection}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <ProductPrimaryActions product={product} onDelete={handleDelete} />
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
-                  <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
-                    {conditionLabel[product.condition]}
-                  </span>
-                  <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
-                    {statusLabel[product.status]}
-                  </span>
-                  <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
-                    {inspectionStatusLabel[product.inspection_status]}
-                  </span>
-                  {product.featured && (
-                    <span className="rounded-full border border-brass bg-brass/20 px-2 py-0.5 text-brass-deep">
-                      Nổi bật
-                    </span>
-                  )}
-                </div>
-                <div className="mt-3 border-t border-border pt-2">
-                  <ProductStatusActions
-                    product={product}
-                    onSetStatus={handleSetStatus}
-                    onSetInspection={handleSetInspection}
-                  />
+                  ))}
                 </div>
               </div>
             ))}
