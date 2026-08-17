@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { marked } from "marked";
 import { Container } from "@/components/ui/Container";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getPostBySlug, getPublishedPosts } from "@/data-access/posts";
 import { articleJsonLd, breadcrumbJsonLd, postMetadata } from "@/lib/seo";
@@ -34,17 +35,17 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
   // người dùng gửi), nên render trực tiếp HTML từ Markdown mà không cần
   // sanitize thêm.
   const contentHtml = marked.parse(post.content, { async: false });
+  const crumbs = [
+    { name: "Trang chủ", path: "/" },
+    { name: "Blog", path: "/blog" },
+    { name: post.title, path: `/blog/${slug}` },
+  ];
 
   return (
     <Container className="py-12">
       <JsonLd data={articleJsonLd(post, `/blog/${slug}`)} />
-      <JsonLd
-        data={breadcrumbJsonLd([
-          { name: "Trang chủ", path: "/" },
-          { name: "Blog", path: "/blog" },
-          { name: post.title, path: `/blog/${slug}` },
-        ])}
-      />
+      <JsonLd data={breadcrumbJsonLd(crumbs)} />
+      <Breadcrumb items={crumbs} />
       <article className="mx-auto max-w-3xl">
         {post.category && (
           <p className="text-xs font-semibold uppercase tracking-wide text-brass-deep">

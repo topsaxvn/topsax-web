@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { CategoryProductListing } from "@/components/product/CategoryProductListing";
 import { ProductDetailView } from "@/components/product/ProductDetailView";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -39,15 +40,15 @@ export default async function PhuKienSlugPage({ params }: PageProps<"/phu-kien/[
 
   const category = await getCategoryBySlug(slug);
   if (category) {
+    const crumbs = [
+      { name: "Trang chủ", path: "/" },
+      { name: "Phụ kiện", path: "/phu-kien" },
+      { name: category.name, path: `/phu-kien/${slug}` },
+    ];
     return (
       <Container className="py-12">
-        <JsonLd
-          data={breadcrumbJsonLd([
-            { name: "Trang chủ", path: "/" },
-            { name: "Phụ kiện", path: "/phu-kien" },
-            { name: category.name, path: `/phu-kien/${slug}` },
-          ])}
-        />
+        <JsonLd data={breadcrumbJsonLd(crumbs)} />
+        <Breadcrumb items={crumbs} />
         <SectionHeading eyebrow="Phụ kiện" title={category.name} description={category.description ?? undefined} />
         <CategoryProductListing sectionSlug="phu-kien" basePath="/phu-kien" initialCategory={slug} />
       </Container>
@@ -58,18 +59,17 @@ export default async function PhuKienSlugPage({ params }: PageProps<"/phu-kien/[
   if (!product) notFound();
 
   const related = await getRelatedProducts(product, 4);
+  const crumbs = [
+    { name: "Trang chủ", path: "/" },
+    { name: "Phụ kiện", path: "/phu-kien" },
+    ...(product.category ? [{ name: product.category.name, path: `/phu-kien/${product.category.slug}` }] : []),
+    { name: product.name, path: `/phu-kien/${slug}` },
+  ];
   return (
     <>
       <JsonLd data={productJsonLd(product, `/phu-kien/${slug}`)} />
-      <JsonLd
-        data={breadcrumbJsonLd([
-          { name: "Trang chủ", path: "/" },
-          { name: "Phụ kiện", path: "/phu-kien" },
-          ...(product.category ? [{ name: product.category.name, path: `/phu-kien/${product.category.slug}` }] : []),
-          { name: product.name, path: `/phu-kien/${slug}` },
-        ])}
-      />
-      <ProductDetailView product={product} related={related} />
+      <JsonLd data={breadcrumbJsonLd(crumbs)} />
+      <ProductDetailView product={product} related={related} breadcrumb={crumbs} />
     </>
   );
 }
