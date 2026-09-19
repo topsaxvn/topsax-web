@@ -11,8 +11,8 @@ export const siteConfig = {
   facebookUrl: "https://www.facebook.com/hoang.trung.514918",
   // TODO: đổi thành đúng username Fanpage/Facebook để link m.me hoạt động chính xác.
   messengerUrl: "https://m.me/hoang.trung.514918",
-  // TODO: thay bằng link TikTok/YouTube thật của cửa hàng.
-  tiktokUrl: "https://www.tiktok.com/@topsax",
+  // TODO: thay bằng link YouTube thật của cửa hàng.
+  tiktokUrl: "https://www.tiktok.com/@hong.trung.sax",
   youtubeUrl: "https://www.youtube.com/@topsax",
   email: "topsax.vn@gmail.com",
   address: "174 Ngô Quyền, Hà Đông, Hà Nội",

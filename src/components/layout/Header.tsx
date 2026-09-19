@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Container } from "@/components/ui/Container";
 import { mainNav, siteConfig } from "@/lib/site-config";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 import { MessengerIcon, ZaloIcon } from "@/components/ui/SocialIcons";
@@ -9,7 +8,7 @@ export function Header() {
   return (
     <header className="relative">
       <div className="border-b border-brass-deep/20 bg-brass">
-        <Container className="flex h-20 items-center justify-between lg:h-24">
+        <div className="relative flex h-20 items-center justify-between px-4 sm:px-6 lg:h-24 lg:px-10">
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/brand/topsax-icon.png"
@@ -24,13 +23,13 @@ export function Header() {
             </span>
           </Link>
 
-          <nav className="hidden lg:block">
-            <ul className="flex items-center gap-8">
+          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
+            <ul className="flex items-center gap-10">
               {mainNav.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="text-sm font-semibold text-ink/80 transition-colors hover:text-ink"
+                    className="text-lg font-semibold text-ink/80 transition-colors hover:text-ink"
                   >
                     {item.label}
                   </Link>
@@ -61,7 +60,7 @@ export function Header() {
           </div>
 
           <MobileMenu />
-        </Container>
+        </div>
       </div>
     </header>
   );
