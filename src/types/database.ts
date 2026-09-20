@@ -263,6 +263,38 @@ export interface Database {
           },
         ];
       };
+      // Bảng "songs" thuộc project cảm âm (virtual-piano) dùng chung Supabase
+      // project với TOPSAX. TOPSAX chỉ đọc (không tạo/sửa) các bài đã published.
+      songs: {
+        Row: {
+          id: string;
+          title: string;
+          singer: string;
+          lines: Json;
+          scale_root: number;
+          scale_type: string;
+          instrument: string;
+          naming: string;
+          song_key: number;
+          published: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title?: string;
+          singer?: string;
+          lines?: Json;
+          scale_root?: number;
+          scale_type?: string;
+          instrument?: string;
+          naming?: string;
+          song_key?: number;
+          published?: boolean;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["songs"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

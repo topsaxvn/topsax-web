@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/site-config";
 import { createClient } from "@/lib/supabase/server";
 
-const staticPaths = ["", "/saxophone", "/phu-kien", "/blog", "/gioi-thieu", "/lien-he"];
+const staticPaths = ["", "/saxophone", "/phu-kien", "/cam-am", "/blog", "/gioi-thieu"];
 
 type CategoryRow = { id: string; slug: string; parent_id: string | null; updated_at: string | null };
 
@@ -27,10 +27,11 @@ function rootSlugFor(categoryId: string | null, categoryById: Map<string, Catego
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createClient();
 
-  const [{ data: categories }, { data: products }, { data: posts }] = await Promise.all([
+  const [{ data: categories }, { data: products }, { data: posts }, { data: songs }] = await Promise.all([
     supabase.from("categories").select("id,slug,parent_id,updated_at").eq("is_active", true),
     supabase.from("products").select("slug,category_id,updated_at").neq("status", "hidden"),
     supabase.from("posts").select("slug,updated_at").eq("status", "published"),
+    supabase.from("songs").select("id,updated_at").eq("published", true),
   ]);
 
   const categoryById = new Map((categories ?? []).map((c) => [c.id, c]));
@@ -59,5 +60,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
   }));
 
-  return [...staticRoutes, ...categoryRoutes, ...productRoutes, ...postRoutes];
+  const songRoutes: MetadataRoute.Sitemap = (songs ?? []).map((s) => ({
+    url: `${siteConfig.url}/cam-am/${s.id}`,
+    lastModified: s.updated_at ? new Date(s.updated_at) : new Date(),
+  }));
+
+  return [...staticRoutes, ...categoryRoutes, ...productRoutes, ...postRoutes, ...songRoutes];
 }
