@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CamAmBrowser } from "@/components/cam-am/CamAmBrowser";
 import { getPublishedSongs } from "@/data-access/songs";
@@ -17,7 +16,7 @@ export default async function CamAmPage() {
   const songs = await getPublishedSongs();
 
   return (
-    <Container className="py-12">
+    <div>
       <SectionHeading
         eyebrow="Kho cảm âm"
         title="Cảm âm"
@@ -26,6 +25,6 @@ export default async function CamAmPage() {
       <div className="mt-8">
         <CamAmBrowser songs={songs} />
       </div>
-    </Container>
+    </div>
   );
 }

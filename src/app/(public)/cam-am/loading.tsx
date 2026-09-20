@@ -1,9 +1,8 @@
-import { Container } from "@/components/ui/Container";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function Loading() {
   return (
-    <Container className="py-12">
+    <div>
       <Skeleton className="h-4 w-32" />
       <Skeleton className="mt-3 h-8 w-24" />
       <Skeleton className="mt-3 h-5 w-full max-w-2xl" />
@@ -15,6 +14,6 @@ export default function Loading() {
           <Skeleton key={i} className="h-28 w-full rounded-2xl" />
         ))}
       </div>
-    </Container>
+    </div>
   );
 }
