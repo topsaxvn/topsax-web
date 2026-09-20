@@ -38,9 +38,8 @@ const reasons = [
 ];
 
 export default async function Home() {
-  const [featuredSaxophones, latestSaxophones, featuredAccessories, recentPosts, recentSongs] = await Promise.all([
+  const [featuredSaxophones, featuredAccessories, recentPosts, recentSongs] = await Promise.all([
     getProducts({ sectionSlug: "saxophone", featured: true, limit: 4 }),
-    getProducts({ sectionSlug: "saxophone", sort: "newest", limit: 4 }),
     getProducts({ sectionSlug: "phu-kien", featured: true, limit: 4 }),
     getPublishedPosts(3),
     getPublishedSongs(4),
@@ -103,20 +102,6 @@ export default async function Home() {
       </section>
 
       <section className="py-16">
-        <Container>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <SectionHeading eyebrow="Đa dạng lựa chọn" title="Saxophone mới & đã qua sử dụng" />
-            <Link href="/saxophone" className="text-sm font-medium text-brass hover:underline">
-              Xem tất cả →
-            </Link>
-          </div>
-          <div className="mt-8">
-            <ProductGrid products={latestSaxophones} emptyMessage="Chưa có sản phẩm saxophone." />
-          </div>
-        </Container>
-      </section>
-
-      <section className="border-t border-border bg-paper-soft py-16">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <SectionHeading eyebrow="Phụ kiện" title="Phụ kiện nổi bật" />
