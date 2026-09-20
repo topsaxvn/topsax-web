@@ -2,10 +2,11 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import type { SongDetail } from "@/data-access/songs";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { SongDetailView } from "@/components/cam-am/SongDetailView";
 import { getPublishedSongById, getPublishedSongBySlug } from "@/data-access/songs";
 import { songIdFromUrlParam, songUrlSlug } from "@/lib/music";
-import { absoluteUrl } from "@/lib/seo";
+import { absoluteUrl, breadcrumbJsonLd, songJsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -49,9 +50,12 @@ export default async function CamAmDetailPage({ params }: PageProps<"/cam-am/[id
     { name: "Cảm âm", path: "/cam-am" },
     { name: song.title, path: `/cam-am/${canonicalSlug}` },
   ];
+  const path = `/cam-am/${canonicalSlug}`;
 
   return (
     <div>
+      <JsonLd data={songJsonLd(song, path)} />
+      <JsonLd data={breadcrumbJsonLd(crumbs)} />
       <Breadcrumb items={crumbs} />
       <div className="max-w-3xl">
         <SongDetailView song={song} />

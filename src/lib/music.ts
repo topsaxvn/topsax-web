@@ -106,3 +106,11 @@ export function lyricPreview(lines: SongLine[]): string {
     .slice(0, 2)
     .join(" / ");
 }
+
+// Toàn bộ lời bài hát dạng text thuần, dùng cho structured data (JSON-LD).
+export function lyricsText(lines: SongLine[]): string {
+  return lines
+    .map((line) => line.map((w) => w.text).join(" "))
+    .filter(Boolean)
+    .join("\n");
+}

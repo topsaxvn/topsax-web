@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/lib/site-config";
 import type { ProductDetail } from "@/data-access/products";
 import type { PostSummary } from "@/data-access/posts";
+import type { SongDetail } from "@/data-access/songs";
+import { lyricsText, pitchClassName, toneFor } from "@/lib/music";
 
 export function absoluteUrl(path: string): string {
   return `${siteConfig.url}${path}`;
@@ -145,6 +147,25 @@ export function organizationJsonLd() {
       streetAddress: siteConfig.address,
       addressCountry: "VN",
     },
+  };
+}
+
+// MusicComposition thay vì MusicRecording vì trang chỉ có lời + tên nốt
+// (bản ký âm), không có file ghi âm. "singer" trong DB là người thể hiện
+// bản ghi âm gốc, không phải tác giả - gán vào recordedAs.byArtist chứ
+// không gán vào composer/lyricist để không sai dữ liệu.
+export function songJsonLd(song: SongDetail, path: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "MusicComposition",
+    name: song.title,
+    url: absoluteUrl(path),
+    inLanguage: "vi",
+    musicalKey: pitchClassName(toneFor(song.song_key, "piano"), "letter"),
+    lyrics: song.lines.length > 0 ? { "@type": "CreativeWork", text: lyricsText(song.lines) } : undefined,
+    recordedAs: song.singer
+      ? { "@type": "MusicRecording", byArtist: { "@type": "Person", name: song.singer } }
+      : undefined,
   };
 }
 
