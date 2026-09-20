@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import {
   submitContactMessage,
   type ContactFormState,
-} from "@/app/(public)/lien-he/actions";
+} from "@/app/(public)/gioi-thieu/actions";
 
 const initialState: ContactFormState = { status: "idle", message: "" };
 

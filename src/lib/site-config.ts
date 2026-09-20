@@ -21,7 +21,7 @@ export const siteConfig = {
 export const mainNav = [
   { label: "Saxophone", href: "/saxophone" },
   { label: "Phụ kiện", href: "/phu-kien" },
+  { label: "Cảm âm", href: "/cam-am" },
   { label: "Blog", href: "/blog" },
   { label: "Giới thiệu", href: "/gioi-thieu" },
-  { label: "Liên hệ", href: "/lien-he" },
 ] as const;

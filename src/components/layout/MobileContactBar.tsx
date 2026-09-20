@@ -21,7 +21,7 @@ export function MobileContactBar() {
           Zalo
         </a>
         <a
-          href="/lien-he"
+          href="/gioi-thieu#lien-he"
           className="flex flex-col items-center gap-0.5 py-2.5 text-xs font-medium text-ink"
         >
           <span aria-hidden>✉️</span>

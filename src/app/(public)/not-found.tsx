@@ -18,7 +18,7 @@ export default function NotFound() {
         <Button href="/saxophone" variant="outline">
           Xem saxophone
         </Button>
-        <Button href="/lien-he" variant="ghost">
+        <Button href="/gioi-thieu#lien-he" variant="ghost">
           Liên hệ
         </Button>
       </div>

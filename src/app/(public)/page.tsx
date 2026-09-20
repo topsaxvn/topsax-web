@@ -70,7 +70,7 @@ export default async function Home() {
               <Button href="/saxophone" variant="brass">
                 Xem saxophone
               </Button>
-              <Button href="/lien-he" variant="outline">
+              <Button href="/gioi-thieu#lien-he" variant="outline">
                 Liên hệ tư vấn
               </Button>
             </div>
