@@ -268,8 +268,10 @@ export interface Database {
       songs: {
         Row: {
           id: string;
+          slug: string;
           title: string;
           singer: string;
+          description: string | null;
           lines: Json;
           scale_root: number;
           scale_type: string;
@@ -281,8 +283,10 @@ export interface Database {
         };
         Insert: {
           id?: string;
+          slug?: string;
           title?: string;
           singer?: string;
+          description?: string | null;
           lines?: Json;
           scale_root?: number;
           scale_type?: string;

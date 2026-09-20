@@ -195,6 +195,12 @@ export function SongDetailView({ song }: { song: SongDetail }) {
         ))}
       </div>
 
+      {song.description && (
+        <div className="mt-10 rounded-2xl border border-border bg-paper-soft p-4">
+          <p className="whitespace-pre-line text-sm text-ink">{song.description}</p>
+        </div>
+      )}
+
       {usedWrittenNotes.length > 0 && (
         <div className="mt-10">
           <h2 className="text-sm font-semibold text-muted">Thế bấm dùng trong bài</h2>

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { songUrlSlug } from "@/lib/music";
 import { siteConfig } from "@/lib/site-config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     supabase.from("categories").select("id,slug,parent_id,updated_at").eq("is_active", true),
     supabase.from("products").select("slug,category_id,updated_at").neq("status", "hidden"),
     supabase.from("posts").select("slug,updated_at").eq("status", "published"),
-    supabase.from("songs").select("id,updated_at").eq("published", true),
+    supabase.from("songs").select("slug,updated_at").eq("published", true),
   ]);
 
   const categoryById = new Map((categories ?? []).map((c) => [c.id, c]));
@@ -61,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const songRoutes: MetadataRoute.Sitemap = (songs ?? []).map((s) => ({
-    url: `${siteConfig.url}/cam-am/${s.id}`,
+    url: `${siteConfig.url}/cam-am/${songUrlSlug(s)}`,
     lastModified: s.updated_at ? new Date(s.updated_at) : new Date(),
   }));
 

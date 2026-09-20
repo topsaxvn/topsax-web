@@ -1,6 +1,21 @@
 // Nhạc lý dùng chung cho trang Cảm âm (giữ đồng bộ với view.js của dự án
 // virtual-piano - nguồn dữ liệu bảng "songs").
 
+const UUID_SUFFIX = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+
+// URL cảm âm dùng thẳng cột "slug" của bảng songs.
+export function songUrlSlug(song: { slug: string }): string {
+  return song.slug;
+}
+
+// Trích id UUID từ tham số route cũ (bare id, hoặc slug ghép id kiểu
+// `<ten-bai-hat>-<uuid>` dùng tạm trước khi có cột slug) để tra cứu ngược
+// và redirect sang URL slug hiện tại.
+export function songIdFromUrlParam(param: string): string | null {
+  const match = param.match(UUID_SUFFIX);
+  return match ? match[1] : null;
+}
+
 export type InstrumentKey =
   | "piano"
   | "altoSax"

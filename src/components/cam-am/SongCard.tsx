@@ -1,11 +1,11 @@
 import Link from "next/link";
 import type { SongSummary } from "@/data-access/songs";
-import { lyricPreview, songMetaText } from "@/lib/music";
+import { lyricPreview, songMetaText, songUrlSlug } from "@/lib/music";
 
 export function SongCard({ song }: { song: SongSummary }) {
   return (
     <Link
-      href={`/cam-am/${song.id}`}
+      href={`/cam-am/${songUrlSlug(song)}`}
       className="group flex flex-col gap-2 rounded-2xl border border-border bg-paper p-5 transition-shadow hover:shadow-md"
     >
       <h3 className="font-semibold text-ink group-hover:text-brass-deep">{song.title}</h3>

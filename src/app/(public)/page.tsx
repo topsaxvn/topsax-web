@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { PostGrid } from "@/components/blog/PostGrid";
+import { SongCard } from "@/components/cam-am/SongCard";
 import { getProducts } from "@/data-access/products";
 import { getPublishedPosts } from "@/data-access/posts";
+import { getPublishedSongs } from "@/data-access/songs";
 import { siteConfig } from "@/lib/site-config";
 
 export const revalidate = 1800;
@@ -15,13 +17,6 @@ export const revalidate = 1800;
 export const metadata: Metadata = {
   alternates: { canonical: siteConfig.url },
 };
-
-const quickCategories = [
-  { label: "Alto", href: "/saxophone/alto" },
-  { label: "Tenor", href: "/saxophone/tenor" },
-  { label: "Soprano", href: "/saxophone/soprano" },
-  { label: "Phụ kiện", href: "/phu-kien" },
-];
 
 const reasons = [
   {
@@ -43,11 +38,12 @@ const reasons = [
 ];
 
 export default async function Home() {
-  const [featuredSaxophones, latestSaxophones, featuredAccessories, recentPosts] = await Promise.all([
+  const [featuredSaxophones, latestSaxophones, featuredAccessories, recentPosts, recentSongs] = await Promise.all([
     getProducts({ sectionSlug: "saxophone", featured: true, limit: 4 }),
     getProducts({ sectionSlug: "saxophone", sort: "newest", limit: 4 }),
     getProducts({ sectionSlug: "phu-kien", featured: true, limit: 4 }),
     getPublishedPosts(3),
+    getPublishedSongs(4),
   ]);
 
   return (
@@ -86,32 +82,6 @@ export default async function Home() {
               priority
             />
           </div>
-        </Container>
-      </section>
-
-      <section className="border-b border-border py-10">
-        <Container>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {quickCategories.map((category) => (
-              <Link
-                key={category.href}
-                href={category.href}
-                className="rounded-2xl border border-border bg-paper px-4 py-6 text-center font-semibold text-ink transition-colors hover:border-brass hover:text-brass-deep"
-              >
-                {category.label}
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      <section className="py-16">
-        <Container>
-          <SectionHeading
-            eyebrow="Về chúng tôi"
-            title="Một cửa hàng chuyên saxophone, có kiến thức và uy tín"
-            description="Từ chọn cây kèn đầu tiên đến nâng cấp phụ kiện, chúng tôi đồng hành cùng người chơi saxophone ở mọi trình độ."
-          />
         </Container>
       </section>
 
@@ -157,6 +127,26 @@ export default async function Home() {
           <div className="mt-8">
             <ProductGrid products={featuredAccessories} emptyMessage="Chưa có phụ kiện nổi bật." />
           </div>
+        </Container>
+      </section>
+
+      <section className="py-16">
+        <Container>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <SectionHeading eyebrow="Kho cảm âm" title="Cảm âm mới" />
+            <Link href="/cam-am" className="text-sm font-medium text-brass hover:underline">
+              Xem tất cả →
+            </Link>
+          </div>
+          {recentSongs.length > 0 ? (
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {recentSongs.map((song) => (
+                <SongCard key={song.id} song={song} />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-8 text-sm text-muted">Chưa có cảm âm nào.</p>
+          )}
         </Container>
       </section>
 
