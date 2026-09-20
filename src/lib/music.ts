@@ -13,7 +13,9 @@ export type InstrumentKey =
 
 export type NoteNaming = "letter" | "solfege";
 
-export type SongWord = { text: string; note?: number | null };
+// Một từ có nốt đầu ở `note`, và nếu là nốt luyến (slur) thì các nốt tiếp
+// theo nằm trong `slur` (ví dụ hát "à" trên 3 nốt C4-E4-G4).
+export type SongWord = { text: string; note?: number | null; slur?: number[] | null };
 export type SongLine = SongWord[];
 
 const NOTE_NAMES_LETTER = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -46,8 +48,10 @@ export function transposeForInstrument(concertMidi: number, instrumentKey: Instr
   return concertMidi + inst.semitoneShift + 12 * inst.octaveShift;
 }
 
-export function hasNote(word: SongWord): boolean {
-  return word.note !== null && word.note !== undefined;
+// Tất cả nốt của một từ - nốt đầu cộng các nốt luyến (nếu có), theo đúng thứ tự.
+export function wordNotes(word: SongWord): number[] {
+  if (word.note === null || word.note === undefined) return [];
+  return [word.note, ...(word.slur || [])];
 }
 
 // Cao độ (pitch class) của tone bài hát khi viết cho một nhạc cụ cụ thể

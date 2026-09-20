@@ -5,10 +5,10 @@ import type { SongDetail } from "@/data-access/songs";
 import {
   INSTRUMENTS,
   SAX_FAMILY,
-  hasNote,
   noteNameFromMidi,
   songMetaText,
   transposeForInstrument,
+  wordNotes,
   type InstrumentKey,
   type NoteNaming,
 } from "@/lib/music";
@@ -78,7 +78,7 @@ export function SongDetailView({ song }: { song: SongDetail }) {
     const written = new Set<number>();
     song.lines.forEach((line) =>
       line.forEach((word) => {
-        if (hasNote(word) && word.note != null) written.add(transposeForInstrument(word.note + temp, instrument));
+        wordNotes(word).forEach((n) => written.add(transposeForInstrument(n + temp, instrument)));
       }),
     );
     return [...written].sort((a, b) => a - b);
@@ -153,14 +153,15 @@ export function SongDetailView({ song }: { song: SongDetail }) {
           <div key={i} className="flex flex-wrap items-start gap-1.5">
             {line.map((word, j) => {
               const key = `${i}-${j}`;
-              const noted = hasNote(word) && word.note != null;
-              const src = isSaxFamily && noted ? fingeringSrc(word.note as number) : null;
+              const notes = wordNotes(word);
+              const noted = notes.length > 0;
+              const srcs = isSaxFamily ? notes.map(fingeringSrc).filter((s): s is string => s !== null) : [];
 
               return (
                 <div
                   key={j}
                   className="relative flex flex-col items-center px-1"
-                  {...(src
+                  {...(srcs.length > 0
                     ? {
                         tabIndex: 0,
                         onMouseEnter: () => setActiveWord(key),
@@ -174,15 +175,17 @@ export function SongDetailView({ song }: { song: SongDetail }) {
                   <span
                     className={`min-h-[1em] whitespace-nowrap text-xs font-semibold ${
                       noted ? "text-brass-deep" : "text-transparent"
-                    } ${src ? "cursor-help" : ""}`}
+                    } ${srcs.length > 0 ? "cursor-help" : ""}`}
                   >
-                    {noted ? displayNote(word.note as number) : "·"}
+                    {noted ? notes.map(displayNote).join("-") : "·"}
                   </span>
 
-                  {src && activeWord === key && (
-                    <div className="pointer-events-none absolute bottom-full left-1/2 z-20 -translate-x-1/2 pb-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- ảnh base64 data URI, không dùng next/image */}
-                      <img src={src} alt="" className="w-20 max-w-none rounded-md bg-paper drop-shadow-xl sm:w-24" />
+                  {srcs.length > 0 && activeWord === key && (
+                    <div className="pointer-events-none absolute bottom-full left-1/2 z-20 flex -translate-x-1/2 gap-1 pb-2">
+                      {srcs.map((src, k) => (
+                        // eslint-disable-next-line @next/next/no-img-element -- ảnh base64 data URI, không dùng next/image
+                        <img key={k} src={src} alt="" className="w-20 max-w-none rounded-md bg-paper drop-shadow-xl sm:w-24" />
+                      ))}
                     </div>
                   )}
                 </div>
