@@ -35,7 +35,9 @@ function loadSaxFingerings(): Promise<FingeringData> {
 }
 
 export function SongDetailView({ song }: { song: SongDetail }) {
-  const [instrument, setInstrument] = useState<InstrumentKey>(song.instrument);
+  // Mặc định mở bài ở tone kèn alto sax (nhạc cụ chủ lực của TOPSAX) thay vì
+  // tone gốc lưu trong DB (thường là piano/concert pitch).
+  const [instrument, setInstrument] = useState<InstrumentKey>("altoSax");
   const [naming, setNaming] = useState<NoteNaming>(song.naming);
   const [temp, setTemp] = useState(0);
   const [fingerings, setFingerings] = useState<FingeringData | null>(null);
