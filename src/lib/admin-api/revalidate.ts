@@ -2,7 +2,8 @@ export type RevalidatePayload =
   | { resource: "product"; slug?: string }
   | { resource: "category" }
   | { resource: "brand" }
-  | { resource: "post"; slug?: string };
+  | { resource: "post"; slug?: string }
+  | { resource: "song"; slug?: string };
 
 // Fire-and-forget: không chặn UI admin và không hiện lỗi cho người dùng nếu
 // thất bại - nguồn sự thật của admin là Supabase (tự fetch lại danh sách của

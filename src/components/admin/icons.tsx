@@ -59,6 +59,16 @@ export function BlogIcon(props: IconProps) {
   );
 }
 
+export function MusicNoteIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 17.5V5.5l10-2v12" />
+      <circle cx="6.5" cy="17.5" r="2.5" />
+      <circle cx="16.5" cy="15.5" r="2.5" />
+    </svg>
+  );
+}
+
 export function MenuIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>

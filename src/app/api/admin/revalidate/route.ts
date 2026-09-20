@@ -6,6 +6,7 @@ import {
   revalidateCategoryPaths,
   revalidatePostPaths,
   revalidateProductPaths,
+  revalidateSongPaths,
 } from "@/lib/revalidate";
 
 // Từ khi admin chuyển sang ghi thẳng Supabase từ client (không qua Server
@@ -18,6 +19,7 @@ const bodySchema = z.discriminatedUnion("resource", [
   z.object({ resource: z.literal("category") }),
   z.object({ resource: z.literal("brand") }),
   z.object({ resource: z.literal("post"), slug: z.string().optional() }),
+  z.object({ resource: z.literal("song"), slug: z.string().optional() }),
 ]);
 
 export async function POST(request: NextRequest) {
@@ -43,6 +45,9 @@ export async function POST(request: NextRequest) {
       break;
     case "post":
       revalidatePostPaths(parsed.data.slug);
+      break;
+    case "song":
+      revalidateSongPaths(parsed.data.slug);
       break;
   }
 

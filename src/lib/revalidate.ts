@@ -32,3 +32,10 @@ export function revalidatePostPaths(slug?: string) {
   revalidatePath("/blog");
   if (slug) revalidatePath(`/blog/${slug}`);
 }
+
+export function revalidateSongPaths(slug?: string) {
+  revalidatePath("/admin/cam-am");
+  revalidatePath("/");
+  revalidatePath("/cam-am");
+  if (slug) revalidatePath(`/cam-am/${slug}`);
+}
