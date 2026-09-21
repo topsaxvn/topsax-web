@@ -115,7 +115,7 @@ export default async function Home() {
         </Container>
       </section>
 
-      <section className="py-16">
+      <section className="border-t border-border bg-paper-soft py-16">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <SectionHeading eyebrow="Kho cảm âm" title="Cảm âm mới" />
