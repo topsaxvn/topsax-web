@@ -9,11 +9,12 @@ import { zodFieldErrors } from "@/lib/validation/utils";
 import { triggerRevalidate } from "@/lib/admin-api/revalidate";
 import { slugify } from "@/lib/utils/slugify";
 import { Field, FormSection, inputClass } from "@/components/admin/form-fields";
-import { INSTRUMENTS, noteNameFromMidi, pitchClassName, wordNotes, type SongLine } from "@/lib/music";
+import { LyricsNoteEditor } from "@/components/admin/LyricsNoteEditor";
+import { INSTRUMENTS, pitchClassName, type SongLine } from "@/lib/music";
 
 const KEY_OPTIONS = Array.from({ length: 12 }, (_, i) => ({ value: i, label: pitchClassName(i, "letter") }));
 
-const DEFAULT_LINES: SongLine[] = [[{ text: "Lời", note: 60 }, { text: "bài", note: 62 }, { text: "hát", note: 64 }]];
+const DEFAULT_LINES: SongLine[] = [];
 
 export function SongForm({ song, submitLabel }: { song?: SongAdminDetail; submitLabel: string }) {
   const router = useRouter();
@@ -26,13 +27,12 @@ export function SongForm({ song, submitLabel }: { song?: SongAdminDetail; submit
 
   const error = (field: string) => fieldErrors[field];
 
-  const preview = useMemo(() => {
+  const parsedLines = useMemo<SongLine[]>(() => {
     try {
-      const parsed = JSON.parse(linesJson) as SongLine[];
-      if (!Array.isArray(parsed)) return null;
-      return parsed;
+      const parsed = JSON.parse(linesJson);
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
-      return null;
+      return [];
     }
   }, [linesJson]);
 
@@ -144,45 +144,32 @@ export function SongForm({ song, submitLabel }: { song?: SongAdminDetail; submit
 
       <FormSection title="Lời + tên nốt">
         <p className="text-xs text-muted">
-          Dữ liệu dạng JSON: mảng các dòng, mỗi dòng là mảng các từ{" "}
-          <code className="rounded bg-paper-soft px-1">{"{ text, note, slur? }"}</code>. <code>note</code> là số MIDI
-          cao độ thật (concert pitch); bỏ trống/null nếu từ không có nốt riêng.
+          Dán lời bài hát, bấm &quot;Tách lời thành từ&quot;, rồi bấm phím đàn để gán nốt lần lượt cho từng từ - giống
+          cách nhập của virtual piano.
         </p>
-        <Field label="Lines (JSON)" error={error("lines_json") || error("lines")}>
+        <LyricsNoteEditor value={parsedLines} onChange={(lines) => setLinesJson(JSON.stringify(lines, null, 2))} />
+        {(error("lines_json") || error("lines")) && (
+          <p className="text-xs text-red-600">{error("lines_json") || error("lines")}</p>
+        )}
+
+        <details className="rounded-xl border border-border bg-paper-soft p-3">
+          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-muted">
+            Chỉnh JSON trực tiếp (nâng cao)
+          </summary>
+          <p className="mt-2 text-xs text-muted">
+            Mảng các dòng, mỗi dòng là mảng các từ <code className="rounded bg-paper px-1">{"{ text, note, slur? }"}</code>.{" "}
+            <code>note</code> là số MIDI cao độ thật (concert pitch). Sửa ở đây thì khung nhập lời phía trên có thể
+            không tự đồng bộ lại - dùng nút &quot;Tách lời thành từ&quot; nếu muốn đồng bộ.
+          </p>
           <textarea
             name="lines_json"
-            rows={14}
+            rows={10}
             value={linesJson}
             onChange={(e) => setLinesJson(e.target.value)}
-            className={`${inputClass} font-mono text-xs`}
+            className={`${inputClass} mt-2 font-mono text-xs`}
             spellCheck={false}
           />
-        </Field>
-
-        <div className="rounded-xl border border-border bg-paper-soft p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">Xem trước</p>
-          {preview ? (
-            <div className="mt-2 space-y-1.5">
-              {preview.map((line, i) => (
-                <div key={i} className="flex flex-wrap gap-x-1.5 gap-y-1">
-                  {line.map((word, j) => {
-                    const notes = wordNotes(word);
-                    return (
-                      <span key={j} className="flex flex-col items-center text-center">
-                        <span className="text-sm text-ink">{word.text}</span>
-                        <span className="text-[10px] font-semibold text-brass-deep">
-                          {notes.length > 0 ? notes.map((n) => noteNameFromMidi(n, "letter")).join("-") : " "}
-                        </span>
-                      </span>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-2 text-sm text-red-600">JSON không hợp lệ, không xem trước được.</p>
-          )}
-        </div>
+        </details>
       </FormSection>
 
       <div className="flex items-center gap-4">
