@@ -7,7 +7,7 @@ import { songsApi, type SongAdminSummary } from "@/lib/admin-api/songs";
 import { triggerRevalidate } from "@/lib/admin-api/revalidate";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { pitchClassName } from "@/lib/music";
+import { songKeyName } from "@/lib/music";
 
 export function CamAmPageClient() {
   const searchParams = useSearchParams();
@@ -104,7 +104,7 @@ export function CamAmPageClient() {
                         {song.singer ? `${song.singer} · ` : ""}/cam-am/{song.slug}
                       </p>
                     </td>
-                    <td className="px-4 py-3 text-ink-soft">{pitchClassName(song.song_key, "letter")}</td>
+                    <td className="px-4 py-3 text-ink-soft">{songKeyName(song.song_key, song.song_key_mode, "letter")}</td>
                     <td className="px-4 py-3">
                       <button type="button" onClick={() => handleTogglePublished(song)} className="text-ink-soft hover:underline">
                         {song.published ? "Đã xuất bản" : "Nháp"}
@@ -129,7 +129,7 @@ export function CamAmPageClient() {
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
                   <span className="rounded-full border border-border px-2 py-0.5 text-ink-soft">
-                    {pitchClassName(song.song_key, "letter")}
+                    {songKeyName(song.song_key, song.song_key_mode, "letter")}
                   </span>
                   <button
                     type="button"

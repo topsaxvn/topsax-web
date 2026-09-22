@@ -72,7 +72,7 @@ export function SongDetailView({ song }: { song: SongDetail }) {
       <div className="flex flex-col gap-1.5">
         <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{song.title}</h1>
         {song.singer && <p className="text-sm text-ink">Ca sĩ: {song.singer}</p>}
-        <p className="text-xs font-semibold text-brass-deep">{songMetaText(song.song_key)}</p>
+        <p className="text-xs font-semibold text-brass-deep">{songMetaText(song.song_key, song.song_key_mode)}</p>
       </div>
 
       <div className="mt-6 flex flex-wrap items-end gap-4 rounded-2xl border border-border bg-paper-soft p-4">

@@ -13,7 +13,7 @@ export function SongCard({ song }: { song: SongSummary }) {
       {song.lines.length > 0 && (
         <p className="line-clamp-2 text-sm text-muted">{lyricPreview(song.lines)}</p>
       )}
-      <p className="mt-1 text-xs font-semibold text-brass-deep">{songMetaText(song.song_key)}</p>
+      <p className="mt-1 text-xs font-semibold text-brass-deep">{songMetaText(song.song_key, song.song_key_mode)}</p>
     </Link>
   );
 }

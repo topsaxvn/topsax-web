@@ -28,6 +28,10 @@ export type InstrumentKey =
 
 export type NoteNaming = "letter" | "solfege";
 
+// Giọng trưởng hay thứ của tone gốc bài hát - cùng tên nốt nhưng khác giọng
+// (vd: La trưởng và La thứ) nên cần lưu riêng, không suy ra được từ pitch class.
+export type SongKeyMode = "major" | "minor";
+
 // Một từ có nốt đầu ở `note`, và nếu là nốt luyến (slur) thì các nốt tiếp
 // theo nằm trong `slur` (ví dụ hát "à" trên 3 nốt C4-E4-G4).
 export type SongWord = { text: string; note?: number | null; slur?: number[] | null };
@@ -58,6 +62,14 @@ export function noteNameFromMidi(midi: number, naming: NoteNaming): string {
   return `${pitchClassName(midi % 12, naming)}${Math.floor(midi / 12) - 1}`;
 }
 
+// Tên giọng gồm cả trưởng/thứ - ký hiệu chữ dùng hậu tố "m" (Am, Bm, Cm...),
+// ký hiệu Do Re Mi thêm chữ "thứ" (La thứ, Si thứ...) vì không viết tắt được.
+export function songKeyName(pc: number, mode: SongKeyMode, naming: NoteNaming): string {
+  const name = pitchClassName(pc, naming);
+  if (mode !== "minor") return name;
+  return naming === "solfege" ? `${name} thứ` : `${name}m`;
+}
+
 export function transposeForInstrument(concertMidi: number, instrumentKey: InstrumentKey): number {
   const inst = INSTRUMENTS[instrumentKey] ?? INSTRUMENTS.piano;
   return concertMidi + inst.semitoneShift + 12 * inst.octaveShift;
@@ -81,11 +93,11 @@ export const TONE_FILTERS: { label: string; instrument: InstrumentKey }[] = [
   { label: "Tone kèn soprano", instrument: "sopranoSax" },
 ];
 
-export function songMetaText(songKey: number): string {
+export function songMetaText(songKey: number, songKeyMode: SongKeyMode = "major"): string {
   return [
-    `Gốc ${pitchClassName(toneFor(songKey, "piano"), "letter")}`,
-    `Alto ${pitchClassName(toneFor(songKey, "altoSax"), "letter")}`,
-    `Soprano ${pitchClassName(toneFor(songKey, "sopranoSax"), "letter")}`,
+    `Gốc ${songKeyName(toneFor(songKey, "piano"), songKeyMode, "letter")}`,
+    `Alto ${songKeyName(toneFor(songKey, "altoSax"), songKeyMode, "letter")}`,
+    `Soprano ${songKeyName(toneFor(songKey, "sopranoSax"), songKeyMode, "letter")}`,
   ].join(" · ");
 }
 

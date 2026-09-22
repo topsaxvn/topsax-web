@@ -3,7 +3,7 @@ import { siteConfig } from "@/lib/site-config";
 import type { ProductDetail } from "@/data-access/products";
 import type { PostSummary } from "@/data-access/posts";
 import type { SongDetail } from "@/data-access/songs";
-import { lyricsText, pitchClassName, toneFor } from "@/lib/music";
+import { lyricsText, songKeyName, toneFor } from "@/lib/music";
 
 export function absoluteUrl(path: string): string {
   return `${siteConfig.url}${path}`;
@@ -161,7 +161,7 @@ export function songJsonLd(song: SongDetail, path: string) {
     name: song.title,
     url: absoluteUrl(path),
     inLanguage: "vi",
-    musicalKey: pitchClassName(toneFor(song.song_key, "piano"), "letter"),
+    musicalKey: songKeyName(toneFor(song.song_key, "piano"), song.song_key_mode, "letter"),
     lyrics: song.lines.length > 0 ? { "@type": "CreativeWork", text: lyricsText(song.lines) } : undefined,
     recordedAs: song.singer
       ? { "@type": "MusicRecording", byArtist: { "@type": "Person", name: song.singer } }

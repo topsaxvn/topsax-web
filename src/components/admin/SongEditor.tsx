@@ -15,6 +15,7 @@ import {
   wordNotes,
   type InstrumentKey,
   type NoteNaming,
+  type SongKeyMode,
   type SongLine,
   type SongWord,
 } from "@/lib/music";
@@ -54,6 +55,7 @@ type Values = {
   instrument: InstrumentKey;
   naming: NoteNaming;
   songKey: number;
+  songKeyMode: SongKeyMode;
   lines: SongLine[];
 };
 
@@ -68,6 +70,7 @@ const EMPTY_VALUES: Values = {
   instrument: "piano",
   naming: "letter",
   songKey: 0,
+  songKeyMode: "major",
   lines: [],
 };
 
@@ -84,6 +87,7 @@ function valuesFromSong(song?: SongAdminDetail): Values {
     instrument: song.instrument,
     naming: song.naming,
     songKey: song.song_key || 0,
+    songKeyMode: song.song_key_mode || "major",
     lines: JSON.parse(JSON.stringify(song.lines)) as SongLine[],
   };
 }
@@ -416,6 +420,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
       singer: values.singer,
       description: values.description,
       song_key: values.songKey,
+      song_key_mode: values.songKeyMode,
       scale_root: values.scaleRoot,
       scale_type: values.scaleType,
       instrument: values.instrument,
@@ -485,6 +490,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
       instrument: values.instrument,
       naming: values.naming,
       songKey: values.songKey,
+      songKeyMode: values.songKeyMode,
       published: values.published,
     };
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
@@ -522,6 +528,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
         instrument: typeof data.instrument === "string" && data.instrument ? data.instrument : "piano",
         naming: data.naming === "solfege" ? "solfege" : "letter",
         song_key: Number(data.songKey) || 0,
+        song_key_mode: data.songKeyMode === "minor" ? "minor" : "major",
         published: false,
         updated_at: new Date().toISOString(),
       });
@@ -672,6 +679,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
               scaleType={values.scaleType}
               instrument={values.instrument}
               songKey={values.songKey}
+              songKeyMode={values.songKeyMode}
               naming={values.naming}
               volume={volume}
               tempTranspose={tempTranspose}
@@ -682,6 +690,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
               onScaleType={(scaleType) => patch({ scaleType })}
               onInstrument={(instrument) => patch({ instrument })}
               onSongKey={(songKey) => patch({ songKey })}
+              onSongKeyMode={(songKeyMode) => patch({ songKeyMode })}
               onNaming={(naming) => patch({ naming })}
               onVolume={setVolume}
               onTranspose={transpose}

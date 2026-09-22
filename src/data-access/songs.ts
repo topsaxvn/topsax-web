@@ -7,7 +7,7 @@ type SongRow = Database["public"]["Tables"]["songs"]["Row"];
 
 export type SongSummary = Pick<
   SongRow,
-  "id" | "slug" | "title" | "singer" | "instrument" | "song_key" | "updated_at"
+  "id" | "slug" | "title" | "singer" | "instrument" | "song_key" | "song_key_mode" | "updated_at"
 > & {
   lines: SongLine[];
 };
@@ -25,7 +25,7 @@ export async function getPublishedSongs(limit?: number): Promise<SongSummary[]> 
   let query = supabase
     .from("songs")
     // Chỉ lấy 2 dòng lời đầu để preview card, không tải cả bài.
-    .select("id,slug,title,singer,instrument,song_key,updated_at,first:lines->0,second:lines->1")
+    .select("id,slug,title,singer,instrument,song_key,song_key_mode,updated_at,first:lines->0,second:lines->1")
     .eq("published", true)
     .order("updated_at", { ascending: false });
 
@@ -42,6 +42,7 @@ export async function getPublishedSongs(limit?: number): Promise<SongSummary[]> 
     singer: row.singer,
     instrument: row.instrument as InstrumentKey,
     song_key: row.song_key,
+    song_key_mode: row.song_key_mode,
     updated_at: row.updated_at,
     lines: [row.first, row.second].filter((l): l is SongLine => Boolean(l)),
   }));

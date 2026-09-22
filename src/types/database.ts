@@ -10,6 +10,7 @@ export type ProductStatus = "available" | "sold" | "hidden";
 export type ProductInspectionStatus = "pending" | "in_progress" | "passed" | "failed";
 export type PostStatus = "draft" | "published" | "archived";
 export type ContactMessageStatus = "new" | "contacted" | "closed";
+export type SongKeyMode = "major" | "minor";
 
 export interface Database {
   public: {
@@ -278,6 +279,7 @@ export interface Database {
           instrument: string;
           naming: string;
           song_key: number;
+          song_key_mode: SongKeyMode;
           published: boolean;
           updated_at: string;
         };
@@ -293,6 +295,7 @@ export interface Database {
           instrument?: string;
           naming?: string;
           song_key?: number;
+          song_key_mode?: SongKeyMode;
           published?: boolean;
           updated_at?: string;
         };
@@ -308,6 +311,7 @@ export interface Database {
       product_inspection_status: ProductInspectionStatus;
       post_status: PostStatus;
       contact_message_status: ContactMessageStatus;
+      song_key_mode: SongKeyMode;
     };
   };
 }

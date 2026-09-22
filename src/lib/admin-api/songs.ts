@@ -9,7 +9,7 @@ type SongRow = Database["public"]["Tables"]["songs"]["Row"];
 
 export type SongAdminSummary = Pick<
   SongRow,
-  "id" | "slug" | "title" | "singer" | "song_key" | "published" | "updated_at"
+  "id" | "slug" | "title" | "singer" | "song_key" | "song_key_mode" | "published" | "updated_at"
 >;
 
 export type SongAdminDetail = Omit<SongRow, "instrument" | "naming" | "lines"> & {
@@ -36,7 +36,7 @@ export const songsApi = {
   async list(q?: string): Promise<SongAdminSummary[]> {
     let query = supabase
       .from("songs")
-      .select("id,slug,title,singer,song_key,published,updated_at")
+      .select("id,slug,title,singer,song_key,song_key_mode,published,updated_at")
       .order("updated_at", { ascending: false });
     if (q) query = query.ilike("title", `%${q}%`);
 

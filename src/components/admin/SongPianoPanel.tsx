@@ -1,6 +1,6 @@
 "use client";
 
-import { INSTRUMENTS, noteNameFromMidi, pitchClassName, type InstrumentKey, type NoteNaming } from "@/lib/music";
+import { INSTRUMENTS, noteNameFromMidi, pitchClassName, type InstrumentKey, type NoteNaming, type SongKeyMode } from "@/lib/music";
 import { SCALES } from "@/lib/song-editor";
 import { PianoKeyboard } from "@/components/admin/PianoKeyboard";
 
@@ -25,6 +25,7 @@ export function SongPianoPanel({
   scaleType,
   instrument,
   songKey,
+  songKeyMode,
   naming,
   volume,
   tempTranspose,
@@ -35,6 +36,7 @@ export function SongPianoPanel({
   onScaleType,
   onInstrument,
   onSongKey,
+  onSongKeyMode,
   onNaming,
   onVolume,
   onTranspose,
@@ -46,6 +48,7 @@ export function SongPianoPanel({
   scaleType: string;
   instrument: InstrumentKey;
   songKey: number;
+  songKeyMode: SongKeyMode;
   naming: NoteNaming;
   volume: number;
   tempTranspose: number;
@@ -56,6 +59,7 @@ export function SongPianoPanel({
   onScaleType: (type: string) => void;
   onInstrument: (key: InstrumentKey) => void;
   onSongKey: (pc: number) => void;
+  onSongKeyMode: (mode: SongKeyMode) => void;
   onNaming: (naming: NoteNaming) => void;
   onVolume: (v: number) => void;
   onTranspose: (semitones: number) => void;
@@ -94,13 +98,23 @@ export function SongPianoPanel({
           </select>
         </Group>
         <Group label="Tone gốc bài hát">
-          <select value={songKey} onChange={(e) => onSongKey(Number(e.target.value))} className={selectClass}>
-            {PITCH_CLASSES.map((pc) => (
-              <option key={pc} value={pc}>
-                {pitchClassName(pc, naming)}
-              </option>
-            ))}
-          </select>
+          <div className="flex gap-2">
+            <select value={songKey} onChange={(e) => onSongKey(Number(e.target.value))} className={selectClass}>
+              {PITCH_CLASSES.map((pc) => (
+                <option key={pc} value={pc}>
+                  {pitchClassName(pc, naming)}
+                </option>
+              ))}
+            </select>
+            <select
+              value={songKeyMode}
+              onChange={(e) => onSongKeyMode(e.target.value as SongKeyMode)}
+              className={selectClass}
+            >
+              <option value="major">Trưởng</option>
+              <option value="minor">Thứ (vd: Am)</option>
+            </select>
+          </div>
         </Group>
         <Group label="Dịch giọng (đổi nốt, lưu lại)">
           <div className="flex gap-2">

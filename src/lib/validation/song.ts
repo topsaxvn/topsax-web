@@ -19,6 +19,7 @@ export const songSchema = z.object({
   // DB đang lưu "" (không phải null) cho bài chưa có mô tả.
   description: z.string().trim(),
   song_key: z.number().int().min(0).max(11),
+  song_key_mode: z.enum(["major", "minor"]),
   scale_root: z.number().int().min(0).max(11),
   scale_type: z.string().trim().min(1),
   instrument: z.string().trim().min(1),
