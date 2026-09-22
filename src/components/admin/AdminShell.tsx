@@ -120,7 +120,14 @@ export function AdminShell({ userEmail, children }: { userEmail: string; childre
 
       {/* Main content */}
       <main className="min-h-screen pb-20 md:ml-56 md:pb-0">
-        <div className="mx-auto max-w-6xl px-4 py-5 md:px-6 md:py-8">{children}</div>
+        <div
+          className={cn(
+            "mx-auto px-4 py-5 md:px-6 md:py-8",
+            pathname.startsWith("/admin/cam-am") ? "max-w-none" : "max-w-6xl",
+          )}
+        >
+          {children}
+        </div>
       </main>
 
       {/* Mobile bottom tab bar */}

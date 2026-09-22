@@ -1,64 +1,78 @@
 "use client";
 
-import { noteNameFromMidi } from "@/lib/music";
+import { noteNameFromMidi, type NoteNaming } from "@/lib/music";
+import { PIANO_MIDI_MAX, PIANO_MIDI_MIN, isBlackKey, isInScale } from "@/lib/song-editor";
 
-// Nốt trắng trong 1 quãng 8, theo thứ tự C D E F G A B (offset nửa cung so
-// với gốc C).
-const WHITE_SEMITONES = [0, 2, 4, 5, 7, 9, 11];
-// Nốt đen nằm ngay sau nốt trắng ở các vị trí index này (C#, D#, F#, G#, A#
-// - không có nốt đen sau E và sau B).
-const BLACK_AFTER_WHITE_INDEX = [0, 1, 3, 4, 5];
+const WHITE_W = 40;
+const BLACK_W = 26;
 
-export function PianoKeyboard({
-  startMidi,
-  octaves,
-  activeMidi,
-  onKeyClick,
-}: {
-  startMidi: number;
-  octaves: number;
-  activeMidi?: number | null;
-  onKeyClick: (midi: number) => void;
-}) {
-  const totalWhite = octaves * 7;
-  const whiteKeys: { midi: number }[] = [];
-  const blackKeys: { midi: number; afterWhiteIndex: number }[] = [];
+type Props = {
+  naming: NoteNaming;
+  scaleRoot: number;
+  scaleType: string;
+  pressed: number[];
+  onKeyPress: (midi: number, shift: boolean) => void;
+};
 
-  for (let oct = 0; oct < octaves; oct++) {
-    WHITE_SEMITONES.forEach((semi) => whiteKeys.push({ midi: startMidi + oct * 12 + semi }));
-    BLACK_AFTER_WHITE_INDEX.forEach((wi) => {
-      blackKeys.push({ midi: startMidi + oct * 12 + WHITE_SEMITONES[wi] + 1, afterWhiteIndex: oct * 7 + wi });
-    });
+function keyClass(midi: number, black: boolean, scaleRoot: number, scaleType: string, isPressed: boolean) {
+  const root = ((midi % 12) + 12) % 12 === scaleRoot;
+  const inScale = isInScale(midi, scaleRoot, scaleType);
+  if (black) {
+    const bg = isPressed ? "bg-[#4a86c9]" : root ? "bg-[#ff8c42]" : inScale ? "bg-[#b8860b]" : "bg-[#1c1c1f]";
+    return `z-10 h-[110px] w-[26px] text-[#eee] ${bg}`;
+  }
+  const bg = isPressed
+    ? "bg-[#cfe8ff]"
+    : root
+      ? "bg-[#ff8c42] font-bold text-white shadow-[inset_0_0_0_2px_#d4691e]"
+      : inScale
+        ? "bg-[#ffdd7a]"
+        : "bg-[#f7f5f0]";
+  return `z-0 h-[180px] w-[40px] text-[#333] ${bg}`;
+}
+
+export function PianoKeyboard({ naming, scaleRoot, scaleType, pressed, onKeyPress }: Props) {
+  const whiteKeys: number[] = [];
+  const blackKeys: { midi: number; whiteBefore: number }[] = [];
+  let whiteCount = 0;
+
+  for (let midi = PIANO_MIDI_MIN; midi <= PIANO_MIDI_MAX; midi++) {
+    if (isBlackKey(midi)) blackKeys.push({ midi, whiteBefore: whiteCount });
+    else {
+      whiteKeys.push(midi);
+      whiteCount++;
+    }
   }
 
+  const base =
+    "absolute top-0 flex select-none items-end justify-center rounded-b-md border border-[#111] pb-1.5 text-[10px] transition-colors duration-75";
+
   return (
-    <div className="relative flex h-28 w-full select-none">
-      {whiteKeys.map((k) => (
-        <button
-          key={k.midi}
-          type="button"
-          onClick={() => onKeyClick(k.midi)}
-          className={`flex flex-1 items-end justify-center border border-l-0 border-border pb-1 text-[10px] font-medium first:rounded-l-md first:border-l last:rounded-r-md ${
-            activeMidi === k.midi ? "bg-brass text-ink" : "bg-white text-ink-soft hover:bg-paper-soft"
-          }`}
-        >
-          {noteNameFromMidi(k.midi, "letter")}
-        </button>
-      ))}
-      {blackKeys.map((k) => (
-        <button
-          key={k.midi}
-          type="button"
-          onClick={() => onKeyClick(k.midi)}
-          style={{
-            left: `${((k.afterWhiteIndex + 1) / totalWhite) * 100}%`,
-            width: `${(1 / totalWhite) * 62}%`,
-          }}
-          className={`absolute top-0 z-10 h-[60%] -translate-x-1/2 rounded-b-md ${
-            activeMidi === k.midi ? "bg-brass-deep" : "bg-ink hover:bg-ink-soft"
-          }`}
-        />
-      ))}
+    <div className="overflow-x-auto pb-2">
+      <div className="relative h-[180px] select-none" style={{ width: whiteKeys.length * WHITE_W }}>
+        {whiteKeys.map((midi, idx) => (
+          <div
+            key={midi}
+            data-midi={midi}
+            style={{ left: idx * WHITE_W }}
+            onPointerDown={(e) => onKeyPress(midi, e.shiftKey)}
+            className={`${base} ${keyClass(midi, false, scaleRoot, scaleType, pressed.includes(midi))}`}
+          >
+            <span className="pointer-events-none">{noteNameFromMidi(midi, naming)}</span>
+          </div>
+        ))}
+        {blackKeys.map(({ midi, whiteBefore }) => (
+          <div
+            key={midi}
+            data-midi={midi}
+            style={{ left: whiteBefore * WHITE_W - BLACK_W / 2 }}
+            onPointerDown={(e) => onKeyPress(midi, e.shiftKey)}
+            className={`${base} ${keyClass(midi, true, scaleRoot, scaleType, pressed.includes(midi))}`}
+          >
+            <span className="pointer-events-none">{noteNameFromMidi(midi, naming)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

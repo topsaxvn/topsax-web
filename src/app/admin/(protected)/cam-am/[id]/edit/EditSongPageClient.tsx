@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { notFound, useParams } from "next/navigation";
-import { SongForm } from "@/components/admin/SongForm";
+import { SongEditor } from "@/components/admin/SongEditor";
 import { songsApi, type SongAdminDetail } from "@/lib/admin-api/songs";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -23,19 +23,13 @@ export function EditSongPageClient() {
 
   if (song === null) notFound();
 
-  return (
-    <div>
-      <h1 className="text-xl font-semibold text-ink">Sửa bài cảm âm</h1>
-      <div className="mt-6">
-        {song ? (
-          <SongForm song={song} submitLabel="Lưu thay đổi" />
-        ) : (
-          <div className="max-w-3xl space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        )}
-      </div>
+  // key theo id: chuyển sang bài khác thì editor được dựng lại với dữ liệu mới.
+  return song && song.id === id ? (
+    <SongEditor key={song.id} song={song} />
+  ) : (
+    <div className="space-y-4">
+      <Skeleton className="h-10 w-64" />
+      <Skeleton className="h-96 w-full" />
     </div>
   );
 }

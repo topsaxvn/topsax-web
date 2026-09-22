@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { SongDetail } from "@/data-access/songs";
+import { loadSaxFingerings, type FingeringData } from "@/lib/sax-fingerings";
 import {
   INSTRUMENTS,
   SAX_FAMILY,
@@ -15,24 +16,6 @@ import {
 
 const fieldClass =
   "rounded-lg border border-border bg-paper px-3.5 py-2 text-sm text-ink outline-none focus:border-brass";
-
-type FingeringData = { baseMidi: number; images: string[] };
-
-let fingeringPromise: Promise<FingeringData> | null = null;
-function loadSaxFingerings(): Promise<FingeringData> {
-  if (!fingeringPromise) {
-    fingeringPromise = fetch("/cam-am/sax-fingerings.json")
-      .then((res) => {
-        if (!res.ok) throw new Error("Không tải được thế bấm");
-        return res.json() as Promise<FingeringData>;
-      })
-      .catch((err) => {
-        fingeringPromise = null;
-        throw err;
-      });
-  }
-  return fingeringPromise;
-}
 
 export function SongDetailView({ song }: { song: SongDetail }) {
   // Mặc định mở bài ở tone kèn alto sax (nhạc cụ chủ lực của TOPSAX) thay vì
