@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { siteConfig } from "@/lib/site-config";
 import { PreconnectHints } from "@/components/seo/PreconnectHints";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -36,6 +38,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <JsonLd data={organizationJsonLd()} />
         <PreconnectHints />
         {children}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
