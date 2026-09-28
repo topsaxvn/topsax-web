@@ -6,7 +6,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { SongDetailView } from "@/components/cam-am/SongDetailView";
 import { getPublishedSongById, getPublishedSongBySlug } from "@/data-access/songs";
 import { songIdFromUrlParam, songUrlSlug } from "@/lib/music";
-import { absoluteUrl, breadcrumbJsonLd, songJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, songJsonLd, songMetadata } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -25,16 +25,7 @@ export async function generateMetadata({ params }: PageProps<"/cam-am/[id]">): P
   const song = await resolveSong(id);
   if (!song) return {};
 
-  const title = `${song.title}${song.singer ? ` - ${song.singer}` : ""} | Cảm âm`;
-  const description = `Cảm âm ${song.title}${song.singer ? ` - ${song.singer}` : ""}: lời bài hát kèm tên nốt, tự chuyển tone theo nhạc cụ.`;
-  const url = absoluteUrl(`/cam-am/${songUrlSlug(song)}`);
-
-  return {
-    title,
-    description,
-    alternates: { canonical: url },
-    openGraph: { type: "article", url, title, description },
-  };
+  return songMetadata(song, `/cam-am/${songUrlSlug(song)}`);
 }
 
 export default async function CamAmDetailPage({ params }: PageProps<"/cam-am/[id]">) {

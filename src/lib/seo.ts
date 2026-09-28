@@ -9,6 +9,13 @@ export function absoluteUrl(path: string): string {
   return `${siteConfig.url}${path}`;
 }
 
+// Next.js chỉ merge metadata giữa các segment theo kiểu shallow: nếu một
+// trang tự khai báo `openGraph`, toàn bộ `openGraph` (kể cả `images`) của
+// layout cha bị ghi đè chứ không cộng dồn. Vì vậy trang nào không có ảnh
+// riêng (sản phẩm/bài viết/cảm âm chưa có thumbnail) đều phải tự set lại
+// ảnh mặc định này, nếu không link chia sẻ sẽ mất thumbnail hoàn toàn.
+const defaultOgImage = { url: absoluteUrl("/brand/topsax-logo.png"), alt: siteConfig.name };
+
 export function productMetadata(product: ProductDetail, path: string): Metadata {
   const url = absoluteUrl(path);
   const title = product.meta_title ?? product.name;
@@ -24,13 +31,13 @@ export function productMetadata(product: ProductDetail, path: string): Metadata 
       url,
       title,
       description,
-      images: image ? [{ url: image, alt: product.images[0]?.alt_text ?? product.name }] : undefined,
+      images: [image ? { url: image, alt: product.images[0]?.alt_text ?? product.name } : defaultOgImage],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: image ? [image] : undefined,
+      images: [image ?? defaultOgImage.url],
     },
   };
 }
@@ -49,6 +56,7 @@ export function categoryMetadata(
       url,
       title: category.name,
       description: category.description ?? undefined,
+      images: [defaultOgImage],
     },
   };
 }
@@ -67,14 +75,39 @@ export function postMetadata(post: PostSummary, path: string): Metadata {
       url,
       title,
       description,
-      images: post.thumbnail_url ? [{ url: post.thumbnail_url }] : undefined,
+      images: [post.thumbnail_url ? { url: post.thumbnail_url } : defaultOgImage],
       publishedTime: post.published_at ?? undefined,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: post.thumbnail_url ? [post.thumbnail_url] : undefined,
+      images: [post.thumbnail_url ?? defaultOgImage.url],
+    },
+  };
+}
+
+export function songMetadata(song: SongDetail, path: string): Metadata {
+  const url = absoluteUrl(path);
+  const title = `${song.title}${song.singer ? ` - ${song.singer}` : ""} | Cảm âm`;
+  const description = `Cảm âm ${song.title}${song.singer ? ` - ${song.singer}` : ""}: lời bài hát kèm tên nốt, tự chuyển tone theo nhạc cụ.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      url,
+      title,
+      description,
+      images: [defaultOgImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [defaultOgImage.url],
     },
   };
 }
