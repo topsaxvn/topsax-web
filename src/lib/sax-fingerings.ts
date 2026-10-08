@@ -1,4 +1,6 @@
-export type FingeringData = { baseMidi: number; images: string[] };
+// Thế bấm lấy từ McGill Music Sax School Finger Chart (Bb3 → F7, gồm altissimo).
+// images[i] là thế bấm chính của nốt viết baseMidi + i; alternates[i] là các thế bấm thay thế.
+export type FingeringData = { baseMidi: number; images: string[]; alternates?: string[][] };
 
 let fingeringPromise: Promise<FingeringData> | null = null;
 
