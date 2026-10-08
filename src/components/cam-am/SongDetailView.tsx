@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import type { SongDetail } from "@/data-access/songs";
 import { loadSaxFingerings, type FingeringData } from "@/lib/sax-fingerings";
 import {
@@ -13,6 +14,8 @@ import {
   type InstrumentKey,
   type NoteNaming,
 } from "@/lib/music";
+import { siteConfig } from "@/lib/site-config";
+import { PRINT_SHEET_CLASS, SongPrintSheet } from "@/components/cam-am/SongPrintSheet";
 
 const fieldClass =
   "rounded-lg border border-border bg-paper px-3.5 py-2 text-sm text-ink outline-none focus:border-brass";
@@ -25,6 +28,7 @@ export function SongDetailView({ song }: { song: SongDetail }) {
   const [temp, setTemp] = useState(0);
   const [fingerings, setFingerings] = useState<FingeringData | null>(null);
   const [activeWord, setActiveWord] = useState<string | null>(null);
+  const [preparingPrint, setPreparingPrint] = useState(false);
 
   const isSaxFamily = SAX_FAMILY.includes(instrument);
 
@@ -66,6 +70,43 @@ export function SongDetailView({ song }: { song: SongDetail }) {
     );
     return [...written].sort((a, b) => a - b);
   }, [song.lines, isSaxFamily, instrument, temp]);
+
+  // Tên file PDF mặc định khi "Lưu dưới dạng PDF" lấy theo document.title,
+  // nên đổi tạm trong lúc in (bắt cả trường hợp bấm Ctrl+P).
+  useEffect(() => {
+    const printTitle = `${song.title} - Cảm âm ${INSTRUMENTS[instrument].label} - ${siteConfig.name}`;
+    let original = document.title;
+    const before = () => {
+      original = document.title;
+      document.title = printTitle;
+    };
+    const after = () => {
+      document.title = original;
+    };
+    window.addEventListener("beforeprint", before);
+    window.addEventListener("afterprint", after);
+    return () => {
+      window.removeEventListener("beforeprint", before);
+      window.removeEventListener("afterprint", after);
+    };
+  }, [song.title, instrument]);
+
+  // Chờ có đủ ảnh thế bấm trên tờ in rồi mới mở hộp thoại in của trình duyệt.
+  async function handlePrint() {
+    setPreparingPrint(true);
+    try {
+      if (isSaxFamily && !fingerings) {
+        const data = await loadSaxFingerings();
+        flushSync(() => setFingerings(data));
+      }
+    } catch {
+      // Không tải được thế bấm thì vẫn in phần lời và nốt.
+    }
+    const images = document.querySelectorAll<HTMLImageElement>(`.${PRINT_SHEET_CLASS} img`);
+    await Promise.all([...images].map((img) => img.decode().catch(() => {})));
+    setPreparingPrint(false);
+    window.print();
+  }
 
   return (
     <div>
@@ -125,6 +166,18 @@ export function SongDetailView({ song }: { song: SongDetail }) {
             </button>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handlePrint}
+          disabled={preparingPrint}
+          title="In tờ cảm âm, hoặc chọn “Lưu dưới dạng PDF” trong hộp thoại in"
+          className="ml-auto flex h-9 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper hover:bg-ink-soft disabled:opacity-60"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" aria-hidden="true">
+            <path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z" />
+          </svg>
+          {preparingPrint ? "Đang chuẩn bị..." : "In / Lưu PDF"}
+        </button>
       </div>
 
       {isSaxFamily && (
@@ -205,6 +258,14 @@ export function SongDetailView({ song }: { song: SongDetail }) {
           </div>
         </div>
       )}
+
+      <SongPrintSheet
+        song={song}
+        instrument={instrument}
+        naming={naming}
+        temp={temp}
+        fingerings={usedWrittenNotes.map((written) => ({ written, src: fingeringSrcForWritten(written) }))}
+      />
     </div>
   );
 }

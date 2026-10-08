@@ -42,3 +42,20 @@ body {
     transform: translateY(0);
   }
 }
+
+/* In / Lưu PDF bài cảm âm: khi trang có tờ in (SongPrintSheet gắn thẳng vào
+   <body>) thì chỉ in tờ đó, ẩn header, sidebar, thanh liên hệ... */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 14mm;
+  }
+
+  body:has(> .song-print-sheet) {
+    background: #fff;
+  }
+
+  body:has(> .song-print-sheet) > :not(.song-print-sheet) {
+    display: none !important;
+  }
+}
