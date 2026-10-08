@@ -477,6 +477,8 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
     }
   }
 
+  // Xuất đúng những gì đang thấy trên màn hình (kể cả phần lời đang gõ dở),
+  // không cần lưu trước.
   function handleExport() {
     const data = {
       id: songId,
@@ -484,7 +486,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
       singer: values.singer,
       slug: values.slug,
       description: values.description,
-      lines,
+      lines: pendingLyrics !== null ? applyLyricsPreservingNotes(lines, lyricsDraft) : lines,
       scaleRoot: values.scaleRoot,
       scaleType: values.scaleType,
       instrument: values.instrument,
@@ -496,9 +498,10 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${slugify(values.title) || "bai-hat"}.json`;
+    a.download = `${values.slug || slugify(`${values.title} ${values.singer}`) || "bai-hat"}.json`;
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    setMessage({ text: `Đã xuất file ${a.download}`, error: false });
   }
 
   async function handleImport(e: ChangeEvent<HTMLInputElement>) {
@@ -507,7 +510,16 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
     if (!file) return;
     if (dirty && !confirm(DISCARD_MESSAGE)) return;
     try {
-      const data = JSON.parse(await file.text()) as Record<string, unknown>;
+      const raw = JSON.parse(await file.text()) as Record<string, unknown>;
+      // Nhận cả file do nút "Xuất JSON" tạo (camelCase) lẫn bản ghi lấy thẳng
+      // từ bảng songs (snake_case).
+      const data: Record<string, unknown> = {
+        ...raw,
+        scaleRoot: raw.scaleRoot ?? raw.scale_root,
+        scaleType: raw.scaleType ?? raw.scale_type,
+        songKey: raw.songKey ?? raw.song_key,
+        songKeyMode: raw.songKeyMode ?? raw.song_key_mode,
+      };
       const linesResult = songLinesSchema.safeParse(data.lines);
       if (!linesResult.success || typeof data.title !== "string") {
         throw new Error("File không đúng định dạng bài cảm âm.");
@@ -593,11 +605,11 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
         <button type="button" onClick={handleDelete} disabled={!song} className={`${headerBtn} hover:!border-red-500 hover:!text-red-600`}>
           Xoá
         </button>
-        <button type="button" onClick={handleExport} className={headerBtn}>
-          Xuất
+        <button type="button" onClick={handleExport} title="Tải bài đang mở về máy dạng file .json" className={headerBtn}>
+          Xuất JSON
         </button>
-        <label className={`${headerBtn} cursor-pointer`}>
-          Nhập
+        <label title="Tạo bài nháp mới từ file .json" className={`${headerBtn} cursor-pointer`}>
+          Nhập JSON
           <input type="file" accept="application/json" hidden onChange={handleImport} />
         </label>
         <Link href={publicHref} target="_blank" className="text-sm text-brass-deep hover:underline">
