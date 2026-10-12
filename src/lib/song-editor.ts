@@ -98,12 +98,26 @@ export function lyricsToText(lines: SongLine[]): string {
   return lines.map((line) => line.map((w) => w.text).join(" ")).join("\n");
 }
 
+// Bài lưu từ trước khi tách âm tiết có thể còn chữ gộp ("어두운"): tách ra và
+// chia nốt - đủ mỗi âm tiết một nốt thì chia đều, không thì âm tiết đầu giữ cả.
+function splitWordSyllables(word: SongWord): SongWord[] {
+  const parts = splitSyllables(word.text);
+  if (parts.length <= 1) return [word];
+  const notes = wordNotes(word);
+  return parts.map((text, i) =>
+    notes.length === parts.length
+      ? withNotes({ text, note: null }, [notes[i]])
+      : withNotes({ text, note: null }, i === 0 ? notes : []),
+  );
+}
+
 // Sửa lời nhưng giữ nốt của những chữ không đổi (cùng vị trí, cùng nội dung).
 export function applyLyricsPreservingNotes(oldLines: SongLine[], text: string): SongLine[] {
   const next = parseLyricsText(text);
+  const oldSplit = oldLines.map((line) => line.flatMap(splitWordSyllables));
   return next.map((line, li) =>
     line.map((word, wi) => {
-      const old = oldLines[li]?.[wi];
+      const old = oldSplit[li]?.[wi];
       if (old && old.text === word.text) return { ...old };
       return word;
     }),
