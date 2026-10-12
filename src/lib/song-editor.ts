@@ -56,6 +56,30 @@ export function uniqueSlug(base: string, existing: string[]): string {
 
 // ---------- Lời bài hát ----------
 
+// Chữ Hàn / Hán / Nhật viết liền cả từ nhưng mỗi âm tiết là một nốt, nên tách
+// riêng từng ký tự; dấu câu dính kèm ký tự đứng cạnh, chữ Latin/số giữ nguyên cụm.
+const SYLLABLE_CHAR = /[\p{Script=Hangul}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
+const WORD_CHAR = /[\p{L}\p{N}]/u;
+
+function splitSyllables(token: string): string[] {
+  const parts: string[] = [];
+  let current = "";
+  let hasSyllable = false;
+  for (const ch of token) {
+    const isSyllable = SYLLABLE_CHAR.test(ch);
+    const startsNew = isSyllable ? hasSyllable || WORD_CHAR.test(current) : hasSyllable && WORD_CHAR.test(ch);
+    if (startsNew) {
+      parts.push(current);
+      current = "";
+      hasSyllable = false;
+    }
+    current += ch;
+    if (isSyllable) hasSyllable = true;
+  }
+  if (current) parts.push(current);
+  return parts;
+}
+
 export function parseLyricsText(text: string): SongLine[] {
   return text
     .split("\n")
@@ -65,6 +89,7 @@ export function parseLyricsText(text: string): SongLine[] {
         .trim()
         .split(/\s+/)
         .filter(Boolean)
+        .flatMap(splitSyllables)
         .map((t): SongWord => ({ text: t, note: null })),
     );
 }
