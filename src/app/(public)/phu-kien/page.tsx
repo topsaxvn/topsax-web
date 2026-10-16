@@ -16,6 +16,7 @@ export default function PhuKienPage() {
   return (
     <Container className="py-12">
       <SectionHeading
+        as="h1"
         eyebrow="Danh mục"
         title="Phụ kiện"
         description="Mouthpiece, reed, ligature, case và các phụ kiện saxophone khác."

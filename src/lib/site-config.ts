@@ -4,7 +4,9 @@ export const siteConfig = {
   tagline: "Chuyên saxophone mới, cũ và phụ kiện",
   description:
     "TOPSAX - cửa hàng chuyên saxophone mới, saxophone cũ và phụ kiện. Tư vấn tận tâm, sản phẩm chất lượng, giá cả hợp lý",
-  url: "https://topsax.vn",
+  // Domain chính - topsax.vn (apex) được Vercel redirect 308 sang www, nên
+  // canonical/sitemap/og:url phải dùng đúng bản www để không trỏ vào URL redirect.
+  url: "https://www.topsax.vn",
   phone: "0948 364 640",
   phoneHref: "tel:+84948364640",
   zaloUrl: "https://zalo.me/0948364640",

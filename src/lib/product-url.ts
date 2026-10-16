@@ -1,7 +1,16 @@
-const ACCESSORY_CATEGORY_SLUGS = new Set(["phu-kien", "mouthpiece", "reed", "ligature", "case"]);
+export type ProductSection = "saxophone" | "phu-kien";
 
-export function getProductHref(product: { slug: string; category: { slug: string } | null }) {
-  const section =
-    product.category && ACCESSORY_CATEGORY_SLUGS.has(product.category.slug) ? "phu-kien" : "saxophone";
-  return `/${section}/${product.slug}`;
+type CategoryRef = { slug: string; parent?: { slug: string } | null } | null;
+
+// Khu vực của sản phẩm xác định theo category gốc trong cây danh mục (giống
+// sitemap.ts), không theo danh sách slug cố định - category phụ kiện mới thêm
+// trong admin vẫn ra đúng /phu-kien/... Sản phẩm chưa gán category mặc định
+// thuộc /saxophone.
+export function getProductSection(category: CategoryRef): ProductSection {
+  const rootSlug = category?.parent?.slug ?? category?.slug;
+  return rootSlug === "phu-kien" ? "phu-kien" : "saxophone";
+}
+
+export function getProductHref(product: { slug: string; category: CategoryRef }) {
+  return `/${getProductSection(product.category)}/${product.slug}`;
 }

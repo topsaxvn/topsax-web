@@ -13,6 +13,19 @@ const nextConfig: NextConfig = {
     loader: "custom",
     loaderFile: "./src/lib/utils/cloudinary-loader.ts",
   },
+  // Domain mặc định của hosting (topsaxvn.vercel.app, deploy preview,
+  // *.netlify.app) phục vụ y hệt nội dung domain chính - chặn index ở cấp
+  // header để Google không coi là bản trùng lặp. Không dùng redirect vì sẽ
+  // làm mất khả năng xem deploy preview.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: ".+\\.(?:vercel|netlify)\\.app" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

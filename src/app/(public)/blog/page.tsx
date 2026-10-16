@@ -19,6 +19,7 @@ export default async function BlogPage() {
   return (
     <Container className="py-12">
       <SectionHeading
+        as="h1"
         eyebrow="Kiến thức saxophone"
         title="Blog"
         description="Hướng dẫn chọn mua, kiểm tra, sửa chữa, so sánh model và bảo quản saxophone."

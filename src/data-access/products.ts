@@ -6,14 +6,18 @@ import type { Database } from "@/types/database";
 
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 
+// parent: category cha (saxophone / phu-kien) - dùng để dựng URL sản phẩm
+// đúng khu vực (xem getProductHref), null nếu sản phẩm gán thẳng vào category gốc.
+type ProductCategory = { id: string; name: string; slug: string; parent: { slug: string } | null };
+
 type WithRelations = ProductRow & {
-  category: { id: string; name: string; slug: string } | null;
+  category: ProductCategory | null;
   brand: { id: string; name: string; slug: string } | null;
   product_images: { url: string; alt_text: string | null; is_thumbnail: boolean; sort_order: number }[];
 };
 
 export type ProductSummary = ProductRow & {
-  category: { id: string; name: string; slug: string } | null;
+  category: ProductCategory | null;
   brand: { id: string; name: string; slug: string } | null;
   thumbnailUrl: string | null;
   images: { url: string; alt_text: string | null }[];
@@ -22,7 +26,7 @@ export type ProductSummary = ProductRow & {
 export type ProductDetail = ProductSummary;
 
 const LIST_SELECT =
-  "*, category:categories(id,name,slug), brand:brands(id,name,slug), product_images(url,alt_text,is_thumbnail,sort_order)";
+  "*, category:categories(id,name,slug,parent:parent_id(slug)), brand:brands(id,name,slug), product_images(url,alt_text,is_thumbnail,sort_order)";
 
 function toSummary(row: WithRelations): ProductSummary {
   const { product_images, ...rest } = row;

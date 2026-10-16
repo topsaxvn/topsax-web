@@ -6,13 +6,13 @@ import type { ProductDetail, ProductSummary } from "@/data-access/products";
 const supabase = createClient();
 
 type WithRelations = Database["public"]["Tables"]["products"]["Row"] & {
-  category: { id: string; name: string; slug: string } | null;
+  category: { id: string; name: string; slug: string; parent: { slug: string } | null } | null;
   brand: { id: string; name: string; slug: string } | null;
   product_images: { url: string; alt_text: string | null; is_thumbnail: boolean; sort_order: number }[];
 };
 
 const LIST_SELECT =
-  "*, category:categories(id,name,slug), brand:brands(id,name,slug), product_images(url,alt_text,is_thumbnail,sort_order)";
+  "*, category:categories(id,name,slug,parent:parent_id(slug)), brand:brands(id,name,slug), product_images(url,alt_text,is_thumbnail,sort_order)";
 
 // Khớp 1:1 với toSummary() ở src/data-access/products.ts - trùng lặp có chủ
 // đích: bản đó dùng server client (cho site public/SSR), bản này dùng browser

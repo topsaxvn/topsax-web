@@ -47,6 +47,7 @@ export default function AboutPage() {
   return (
     <Container className="py-12">
       <SectionHeading
+        as="h1"
         eyebrow="Giới thiệu"
         title={`Về ${siteConfig.name}`}
         description="Chúng tôi được thành lập để bạn không phải hoang mang khi chọn saxophone."

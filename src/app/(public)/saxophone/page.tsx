@@ -16,6 +16,7 @@ export default function SaxophonePage() {
   return (
     <Container className="py-12">
       <SectionHeading
+        as="h1"
         eyebrow="Danh mục"
         title="Saxophone"
         description="Alto, tenor, soprano - saxophone mới và đã qua sử dụng, kiểm tra kỹ trước khi bán."

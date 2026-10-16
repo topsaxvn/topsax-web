@@ -18,6 +18,7 @@ export default async function CamAmPage() {
   return (
     <div>
       <SectionHeading
+        as="h1"
         eyebrow="Kho cảm âm"
         title="Cảm âm"
         description="Lời bài hát kèm tên nốt, tự động chuyển tone theo từng loại kèn - kèm bảng thế bấm sax cho từng nốt."

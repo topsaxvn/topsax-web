@@ -3,8 +3,6 @@ import { songUrlSlug } from "@/lib/music";
 import { siteConfig } from "@/lib/site-config";
 import { createClient } from "@/lib/supabase/server";
 
-const staticPaths = ["", "/saxophone", "/phu-kien", "/cam-am", "/blog", "/gioi-thieu"];
-
 type CategoryRow = { id: string; slug: string; parent_id: string | null; updated_at: string | null };
 
 function rootSlugFor(categoryId: string | null, categoryById: Map<string, CategoryRow>): "saxophone" | "phu-kien" | null {
@@ -23,6 +21,11 @@ function rootSlugFor(categoryId: string | null, categoryById: Map<string, Catego
   return null;
 }
 
+function latest(routes: MetadataRoute.Sitemap): Date | undefined {
+  const times = routes.flatMap((r) => (r.lastModified ? [new Date(r.lastModified).getTime()] : []));
+  return times.length > 0 ? new Date(Math.max(...times)) : undefined;
+}
+
 // Sitemap động - đọc trực tiếp từ Supabase để index toàn bộ category,
 // sản phẩm (kể cả đã bán, giữ giá trị SEO) và bài blog đã publish.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -36,11 +39,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const categoryById = new Map((categories ?? []).map((c) => [c.id, c]));
-
-  const staticRoutes: MetadataRoute.Sitemap = staticPaths.map((path) => ({
-    url: `${siteConfig.url}${path}`,
-    lastModified: new Date(),
-  }));
 
   const categoryRoutes: MetadataRoute.Sitemap = (categories ?? [])
     .filter((c) => c.parent_id !== null)
@@ -65,6 +63,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${siteConfig.url}/cam-am/${songUrlSlug(s)}`,
     lastModified: s.updated_at ? new Date(s.updated_at) : new Date(),
   }));
+
+  // lastModified của trang tĩnh = lần cập nhật mới nhất của nội dung nó liệt
+  // kê, thay vì new Date() - ngày luôn đổi mỗi lần build/revalidate khiến
+  // Google không còn tin vào lastmod của cả sitemap. Trang giới thiệu là nội
+  // dung tĩnh trong code nên bỏ trống lastModified.
+  const sectionRoutes = (section: string) =>
+    [...categoryRoutes, ...productRoutes].filter((r) => r.url.startsWith(`${siteConfig.url}/${section}/`));
+  const staticRoutes: MetadataRoute.Sitemap = [
+    { url: siteConfig.url, lastModified: latest([...categoryRoutes, ...productRoutes, ...postRoutes, ...songRoutes]) },
+    { url: `${siteConfig.url}/saxophone`, lastModified: latest(sectionRoutes("saxophone")) },
+    { url: `${siteConfig.url}/phu-kien`, lastModified: latest(sectionRoutes("phu-kien")) },
+    { url: `${siteConfig.url}/cam-am`, lastModified: latest(songRoutes) },
+    { url: `${siteConfig.url}/blog`, lastModified: latest(postRoutes) },
+    { url: `${siteConfig.url}/gioi-thieu` },
+  ];
 
   return [...staticRoutes, ...categoryRoutes, ...productRoutes, ...postRoutes, ...songRoutes];
 }
