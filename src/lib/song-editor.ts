@@ -132,14 +132,17 @@ export function withNotes(word: SongWord, notes: number[]): SongWord {
 }
 
 // Dịch giọng thật: đổi luôn nốt đã gán (khác với thăng/giáng tạm thời chỉ để xem).
-export function transposeLines(lines: SongLine[], semitones: number): SongLine[] {
-  return lines.map((line) =>
-    line.map((w) => {
-      const next: SongWord = { ...w };
-      if (w.note !== null && w.note !== undefined) next.note = w.note + semitones;
-      if (w.slur) next.slur = w.slur.map((m) => m + semitones);
-      return next;
-    }),
+// Truyền `only` để chỉ dịch những câu có chỉ số trong đó.
+export function transposeLines(lines: SongLine[], semitones: number, only?: readonly number[]): SongLine[] {
+  return lines.map((line, li) =>
+    only && !only.includes(li)
+      ? line
+      : line.map((w) => {
+          const next: SongWord = { ...w };
+          if (w.note !== null && w.note !== undefined) next.note = w.note + semitones;
+          if (w.slur) next.slur = w.slur.map((m) => m + semitones);
+          return next;
+        }),
   );
 }
 
@@ -194,7 +197,8 @@ export function moveVertical(lines: SongLine[], active: ActiveWord, dir: 1 | -1)
 
 // ---------- Sao chép / dán nốt cả câu ----------
 
-export type NoteClipboard = { line: number; items: number[][] };
+// `lines`: chỉ số các câu nguồn (đã sắp xếp), `items[k]`: nốt từng chữ của câu lines[k].
+export type NoteClipboard = { lines: number[]; items: number[][][] };
 
 export function lineNoteItems(line: SongLine): number[][] {
   return line.map(wordNotes);
@@ -212,4 +216,20 @@ export function pasteWouldOverwrite(target: SongLine, items: number[][]): boolea
 // hai bên được giữ nguyên.
 export function pasteNoteItems(target: SongLine, items: number[][]): SongLine {
   return target.map((w, i) => (i < items.length ? withNotes(w, items[i]) : w));
+}
+
+// Dán nhiều câu: câu nguồn thứ k vào câu start + k. Câu nguồn vượt quá cuối
+// bài thì bỏ qua.
+export function pasteLineItems(lines: SongLine[], start: number, items: number[][][]): SongLine[] {
+  return lines.map((line, li) => {
+    const k = li - start;
+    return k >= 0 && k < items.length ? pasteNoteItems(line, items[k]) : line;
+  });
+}
+
+export function pasteLinesWouldOverwrite(lines: SongLine[], start: number, items: number[][][]): boolean {
+  return items.some((lineItems, k) => {
+    const target = lines[start + k];
+    return target !== undefined && pasteWouldOverwrite(target, lineItems);
+  });
 }

@@ -30,8 +30,8 @@ import {
   moveHorizontal,
   moveVertical,
   newSongId,
-  pasteNoteItems,
-  pasteWouldOverwrite,
+  pasteLineItems,
+  pasteLinesWouldOverwrite,
   transposeLines,
   uniqueSlug,
   type ActiveWord,
@@ -126,6 +126,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
   const [pressed, setPressed] = useState<number[]>([]);
   const [clipboard, setClipboard] = useState<NoteClipboard | null>(clipboardStore.value);
   const [clipboardStatus, setClipboardStatus] = useState("");
+  const [selectedLines, setSelectedLines] = useState<number[]>([]);
   const [songs, setSongs] = useState<SongAdminSummary[] | null>(null);
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -136,6 +137,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
   const scrollToActive = useRef(false);
   const slurTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const keyHandlerRef = useRef<(e: KeyboardEvent) => void>(() => {});
+  const selectAnchor = useRef<number | null>(null);
 
   const songId = song?.id ?? null;
   const { lines } = values;
@@ -289,6 +291,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
     }
     patch({ lines: applyLyricsPreservingNotes(lines, lyricsDraft) });
     setActive(null);
+    clearLineSelection();
     setEditingLyrics(false);
   }
 
@@ -304,42 +307,81 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
     patch({ lines: transposeLines(lines, semitones), scaleRoot: (((values.scaleRoot + semitones) % 12) + 12) % 12 });
   }
 
+  // Dịch riêng một số câu: chỉ đổi nốt, không đổi gam của cả bài.
+  function transposeSomeLines(indexes: number[], semitones: number) {
+    if (indexes.length === 0) return;
+    patch({ lines: transposeLines(lines, semitones, indexes) });
+    const label = indexes.length === 1 ? `câu ${indexes[0] + 1}` : `${indexes.length} câu đã chọn`;
+    setClipboardStatus(`Đã ${semitones > 0 ? "thăng" : "giáng"} ${Math.abs(semitones)} nửa cung cho ${label}.`);
+  }
+
   function changeOctave(delta: number) {
     setBaseOctave((b) => Math.min(Math.max(b + delta, PIANO_MIDI_MIN), PIANO_MIDI_MAX - 12));
   }
 
-  // ---------- Sao chép / dán nốt cả câu ----------
+  // ---------- Chọn nhiều câu ----------
 
-  function copyLine(li: number) {
-    const items = lineNoteItems(lines[li]);
-    const count = items.filter((n) => n.length > 0).length;
+  // Bấm ô chọn: bật/tắt câu đó. Giữ Shift: chọn cả đoạn từ câu bấm trước đến câu này.
+  function toggleLineSelection(li: number, range: boolean) {
+    const anchor = selectAnchor.current;
+    setSelectedLines((prev) => {
+      if (range && anchor !== null) {
+        const [from, to] = anchor < li ? [anchor, li] : [li, anchor];
+        const set = new Set(prev);
+        for (let i = from; i <= to; i++) if (lines[i]?.length) set.add(i);
+        return [...set].sort((a, b) => a - b);
+      }
+      return prev.includes(li) ? prev.filter((i) => i !== li) : [...prev, li].sort((a, b) => a - b);
+    });
+    selectAnchor.current = li;
+  }
+
+  function selectAllLines() {
+    setSelectedLines(lines.flatMap((line, i) => (line.length > 0 ? [i] : [])));
+    selectAnchor.current = null;
+  }
+
+  function clearLineSelection() {
+    setSelectedLines([]);
+    selectAnchor.current = null;
+  }
+
+  // ---------- Sao chép / dán nốt (một hoặc nhiều câu) ----------
+
+  function copyLines(indexes: number[]) {
+    const items = indexes.map((li) => lineNoteItems(lines[li] ?? []));
+    const count = items.reduce((sum, line) => sum + line.filter((n) => n.length > 0).length, 0);
+    const label = indexes.length === 1 ? `câu ${indexes[0] + 1}` : `${indexes.length} câu`;
     if (count === 0) {
-      setClipboardStatus(`Câu ${li + 1} chưa có nốt nào để sao chép.`);
+      setClipboardStatus(`${label[0].toUpperCase()}${label.slice(1)} chưa có nốt nào để sao chép.`);
       return;
     }
-    const next = { line: li, items };
+    const next = { lines: indexes, items };
     clipboardStore.value = next;
     setClipboard(next);
-    setClipboardStatus(`Đã sao chép nốt của câu ${li + 1} (${count} chữ có nốt). Bấm "Dán" ở câu khác để dán.`);
+    setClipboardStatus(
+      `Đã sao chép nốt của ${label} (${count} chữ có nốt). Bấm "Dán" ở câu ${indexes.length > 1 ? "bắt đầu" : "khác"} để dán.`,
+    );
   }
 
   function pasteLine(li: number) {
     if (!clipboard) return;
-    const target = lines[li];
     const { items } = clipboard;
-    if (pasteWouldOverwrite(target, items) && !confirm(`Câu ${li + 1} đã có nốt khác. Dán sẽ ghi đè các nốt đó. Tiếp tục?`)) {
+    const end = Math.min(lines.length, li + items.length);
+    const range = end - li > 1 ? `câu ${li + 1}–${end}` : `câu ${li + 1}`;
+    if (
+      pasteLinesWouldOverwrite(lines, li, items) &&
+      !confirm(`${range[0].toUpperCase()}${range.slice(1)} đã có nốt khác. Dán sẽ ghi đè các nốt đó. Tiếp tục?`)
+    ) {
       return;
     }
-    const n = Math.min(target.length, items.length);
-    commitLines(
-      lines.map((line, i) => (i === li ? pasteNoteItems(line, items) : line)),
-      active ? { line: active.line, word: active.word } : null,
-    );
-    setClipboardStatus(
-      items.length === target.length
-        ? `Đã dán nốt vào câu ${li + 1}.`
-        : `Đã dán ${n} chữ vào câu ${li + 1} (câu nguồn ${items.length} chữ, câu này ${target.length} chữ).`,
-    );
+    commitLines(pasteLineItems(lines, li, items), active ? { line: active.line, word: active.word } : null);
+
+    const notes: string[] = [];
+    if (li + items.length > lines.length) notes.push(`bỏ ${li + items.length - lines.length} câu thừa vì đã hết bài`);
+    const mismatched = items.filter((lineItems, k) => lines[li + k] && lines[li + k].length !== lineItems.length).length;
+    if (mismatched > 0) notes.push(`${mismatched} câu khác số chữ với câu nguồn, chỉ dán phần trùng`);
+    setClipboardStatus(`Đã dán nốt vào ${range}${notes.length ? ` (${notes.join("; ")})` : ""}.`);
   }
 
   function pickFingering(written: number) {
@@ -379,10 +421,21 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
     }
 
     if ((e.ctrlKey || e.metaKey) && (key === "c" || key === "v")) {
-      if (!active || window.getSelection()?.toString()) return;
+      if (window.getSelection()?.toString()) return;
+      if (key === "c" && selectedLines.length > 0) {
+        e.preventDefault();
+        copyLines(selectedLines);
+        return;
+      }
+      if (!active) return;
       e.preventDefault();
-      if (key === "c") copyLine(active.line);
+      if (key === "c") copyLines([active.line]);
       else pasteLine(active.line);
+      return;
+    }
+
+    if (key === "escape" && selectedLines.length > 0) {
+      clearLineSelection();
       return;
     }
 
@@ -567,6 +620,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
     setSlugTouched(false);
     setActive(null);
     setPressedHighlight(null);
+    clearLineSelection();
     setEditingLyrics(true);
     setLyricsDraft("");
     setTempTranspose(0);
@@ -677,8 +731,14 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
               onToggleEdit={toggleEditLyrics}
               onClearNotes={clearAllNotes}
               onSelectWord={selectWord}
-              onCopyLine={copyLine}
+              selectedLines={selectedLines}
+              onCopyLine={(li) => copyLines([li])}
               onPasteLine={pasteLine}
+              onToggleLineSelection={toggleLineSelection}
+              onSelectAllLines={selectAllLines}
+              onClearLineSelection={clearLineSelection}
+              onCopySelected={() => copyLines(selectedLines)}
+              onTransposeLines={transposeSomeLines}
             />
             {isSax && (
               <SongFingeringList writtenNotes={writtenNotes} activeWritten={activeWritten} onPick={pickFingering} />
