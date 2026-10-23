@@ -2,19 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { loadSaxFingerings, type FingeringData } from "@/lib/sax-fingerings";
-import { noteNameFromMidi, type OctaveStyle } from "@/lib/music";
+import { noteNameFromMidi } from "@/lib/music";
 
 // Các thế bấm sax của những nốt bài đang dùng; nốt của chữ đang chọn / phím
 // vừa bấm được tô sáng. Bấm vào một thế bấm để nghe lại nốt đó.
 export function SongFingeringList({
   writtenNotes,
   activeWritten,
-  octaveStyle,
   onPick,
 }: {
   writtenNotes: number[];
   activeWritten: number[];
-  octaveStyle: OctaveStyle;
   onPick: (written: number) => void;
 }) {
   const [data, setData] = useState<FingeringData | null>(null);
@@ -52,10 +50,10 @@ export function SongFingeringList({
                   : "border-transparent hover:border-border hover:bg-paper-soft"
               }`}
             >
-              <span className="mb-1 text-xs font-bold text-brass-deep">{noteNameFromMidi(written, "letter", octaveStyle)}</span>
+              <span className="mb-1 text-xs font-bold text-brass-deep">{noteNameFromMidi(written, "letter")}</span>
               {src ? (
                 // eslint-disable-next-line @next/next/no-img-element -- ảnh base64 data URI, không dùng next/image
-                <img src={src} alt={noteNameFromMidi(written, "letter", octaveStyle)} className="w-full rounded-md border border-border bg-white" />
+                <img src={src} alt={noteNameFromMidi(written, "letter")} className="w-full rounded-md border border-border bg-white" />
               ) : (
                 <span className="text-[10px] text-muted">{data ? "ngoài phạm vi" : "..."}</span>
               )}

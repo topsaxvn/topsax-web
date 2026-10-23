@@ -6,16 +6,13 @@ import type { SongDetail } from "@/data-access/songs";
 import { loadSaxFingerings, type FingeringData } from "@/lib/sax-fingerings";
 import {
   INSTRUMENTS,
-  OCTAVE_STYLES,
   SAX_FAMILY,
   noteNameFromMidi,
-  octaveLegend,
   songMetaText,
   transposeForInstrument,
   wordNotes,
   type InstrumentKey,
   type NoteNaming,
-  type OctaveStyle,
 } from "@/lib/music";
 import { siteConfig } from "@/lib/site-config";
 import { PRINT_SHEET_CLASS, SongPrintSheet } from "@/components/cam-am/SongPrintSheet";
@@ -28,7 +25,6 @@ export function SongDetailView({ song }: { song: SongDetail }) {
   // tone gốc lưu trong DB (thường là piano/concert pitch).
   const [instrument, setInstrument] = useState<InstrumentKey>("altoSax");
   const [naming, setNaming] = useState<NoteNaming>(song.naming);
-  const [octaveStyle, setOctaveStyle] = useState<OctaveStyle>("mark");
   const [temp, setTemp] = useState(0);
   const [fingerings, setFingerings] = useState<FingeringData | null>(null);
   const [activeWord, setActiveWord] = useState<string | null>(null);
@@ -37,7 +33,7 @@ export function SongDetailView({ song }: { song: SongDetail }) {
   const isSaxFamily = SAX_FAMILY.includes(instrument);
 
   const displayNote = (midi: number) =>
-    noteNameFromMidi(transposeForInstrument(midi + temp, instrument), naming, octaveStyle);
+    noteNameFromMidi(transposeForInstrument(midi + temp, instrument), naming);
 
   useEffect(() => {
     if (!isSaxFamily || fingerings) return;
@@ -146,20 +142,6 @@ export function SongDetailView({ song }: { song: SongDetail }) {
             <option value="solfege">Do Re Mi (Đô Rê Mi...)</option>
           </select>
         </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-muted">Ký hiệu quãng tám</span>
-          <select
-            value={octaveStyle}
-            onChange={(e) => setOctaveStyle(e.target.value as OctaveStyle)}
-            className={fieldClass}
-          >
-            {OCTAVE_STYLES.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
         <div className="flex flex-col gap-1.5">
           <span className="text-xs font-medium text-muted">Thăng/giáng tạm thời (chỉ xem)</span>
           <div className="flex items-center gap-2">
@@ -198,13 +180,8 @@ export function SongDetailView({ song }: { song: SongDetail }) {
         </button>
       </div>
 
-      {octaveStyle === "mark" && (
-        <p className="mt-4 text-xs leading-relaxed text-muted">{octaveLegend(naming, instrument)}</p>
-      )}
       {isSaxFamily && (
-        <p className={`${octaveStyle === "mark" ? "mt-1" : "mt-4"} text-xs text-muted`}>
-          Di chuột (hoặc chạm) vào nốt để xem thế bấm.
-        </p>
+        <p className="mt-4 text-xs text-muted">Di chuột (hoặc chạm) vào nốt để xem thế bấm.</p>
       )}
 
       <div className="mt-4 space-y-3">
@@ -268,7 +245,7 @@ export function SongDetailView({ song }: { song: SongDetail }) {
               const src = fingeringSrcForWritten(written);
               return (
                 <div key={written} className="flex flex-col items-center gap-1">
-                  <p className="text-sm font-semibold text-ink">{noteNameFromMidi(written, "letter", octaveStyle)}</p>
+                  <p className="text-sm font-semibold text-ink">{noteNameFromMidi(written, "letter")}</p>
                   {src ? (
                     // eslint-disable-next-line @next/next/no-img-element -- ảnh base64 data URI, không dùng next/image
                     <img src={src} alt="" className="w-14 max-w-none" />
@@ -286,7 +263,6 @@ export function SongDetailView({ song }: { song: SongDetail }) {
         song={song}
         instrument={instrument}
         naming={naming}
-        octaveStyle={octaveStyle}
         temp={temp}
         fingerings={usedWrittenNotes.map((written) => ({ written, src: fingeringSrcForWritten(written) }))}
       />
