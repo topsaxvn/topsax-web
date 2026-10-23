@@ -58,8 +58,39 @@ export function pitchClassName(pc: number, naming: NoteNaming): string {
   return arr[((pc % 12) + 12) % 12];
 }
 
-export function noteNameFromMidi(midi: number, naming: NoteNaming): string {
-  return `${pitchClassName(midi % 12, naming)}${Math.floor(midi / 12) - 1}`;
+// Cách ghi quãng tám: "mark" (mặc định) là a · A · A' · A'' - chữ hoa không dấu
+// là quãng 4 (C4-B4), chữ thường là quãng 3, mỗi dấu ' cao thêm một quãng, mỗi
+// dấu , thấp thêm một quãng dưới quãng 3. "number" là kiểu cũ A3 · A4 · A5.
+export type OctaveStyle = "mark" | "number";
+
+export const OCTAVE_STYLES: { value: OctaveStyle; label: string }[] = [
+  { value: "mark", label: "a · A · A' (dễ đọc)" },
+  { value: "number", label: "Số (A3 · A4 · A5)" },
+];
+
+export function noteNameFromMidi(midi: number, naming: NoteNaming, octaveStyle: OctaveStyle = "mark"): string {
+  const name = pitchClassName(midi % 12, naming);
+  const octave = Math.floor(midi / 12) - 1;
+  if (octaveStyle === "number") return `${name}${octave}`;
+  if (octave >= 4) return name + "'".repeat(octave - 4);
+  return name.toLowerCase() + ",".repeat(3 - octave);
+}
+
+// Chú thích cách đọc kiểu a · A · A' cho người xem, lấy nốt La làm ví dụ.
+export function octaveLegend(naming: NoteNaming, instrument?: InstrumentKey): string {
+  const la = (midi: number) => noteNameFromMidi(midi, naming);
+  const parts = [
+    `${la(57)} (chữ thường) = quãng thấp`,
+    `${la(69)} (chữ hoa) = quãng giữa`,
+    `${la(81)} = cao hơn ${la(69)} một quãng tám`,
+    `${la(93)} = cao hơn hai quãng tám`,
+  ];
+  const same = [57, 69, 81, 93].map((m) => `${la(m)} = ${noteNameFromMidi(m, naming, "number")}`).join(", ");
+  let text = `Cách đọc nốt: ${parts.join(" · ")} (tương đương ${same}).`;
+  if (instrument && SAX_FAMILY.includes(instrument)) {
+    text += ` Saxophone: từ ${noteNameFromMidi(74, naming)} trở lên bấm thêm phím quãng tám (octave key).`;
+  }
+  return text;
 }
 
 // Tên giọng gồm cả trưởng/thứ - ký hiệu chữ dùng hậu tố "m" (Am, Bm, Cm...),

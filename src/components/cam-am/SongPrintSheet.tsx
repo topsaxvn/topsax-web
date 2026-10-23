@@ -7,11 +7,13 @@ import { siteConfig } from "@/lib/site-config";
 import {
   INSTRUMENTS,
   noteNameFromMidi,
+  octaveLegend,
   songKeyName,
   transposeForInstrument,
   wordNotes,
   type InstrumentKey,
   type NoteNaming,
+  type OctaveStyle,
 } from "@/lib/music";
 
 export const PRINT_SHEET_CLASS = "song-print-sheet";
@@ -28,12 +30,14 @@ export function SongPrintSheet({
   song,
   instrument,
   naming,
+  octaveStyle,
   temp,
   fingerings,
 }: {
   song: SongDetail;
   instrument: InstrumentKey;
   naming: NoteNaming;
+  octaveStyle: OctaveStyle;
   temp: number;
   fingerings: PrintFingering[];
 }) {
@@ -88,6 +92,9 @@ export function SongPrintSheet({
           </div>
         ))}
       </dl>
+      {octaveStyle === "mark" && (
+        <p className="mt-2 text-[10px] leading-snug text-neutral-600">{octaveLegend(naming, instrument)}</p>
+      )}
 
       <div className="mt-6 space-y-2.5">
         {song.lines.map((line, i) => (
@@ -99,7 +106,7 @@ export function SongPrintSheet({
                   <span className="whitespace-nowrap text-[15px]">{word.text}</span>
                   <span className="min-h-[1em] whitespace-nowrap text-[11px] font-bold text-brass-deep">
                     {notes.length > 0
-                      ? notes.map((n) => noteNameFromMidi(transposeForInstrument(n + temp, instrument), naming)).join("-")
+                      ? notes.map((n) => noteNameFromMidi(transposeForInstrument(n + temp, instrument), naming, octaveStyle)).join("-")
                       : ""}
                   </span>
                 </div>
@@ -117,7 +124,7 @@ export function SongPrintSheet({
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-4">
             {fingerings.map(({ written, src }) => (
               <div key={written} className="flex w-[15mm] flex-col items-center gap-1">
-                <p className="text-[11px] font-bold">{noteNameFromMidi(written, naming)}</p>
+                <p className="text-[11px] font-bold">{noteNameFromMidi(written, naming, octaveStyle)}</p>
                 {src ? (
                   // eslint-disable-next-line @next/next/no-img-element -- ảnh base64 data URI, không dùng next/image
                   <img src={src} alt="" className="w-full" />

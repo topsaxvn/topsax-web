@@ -1,6 +1,15 @@
 "use client";
 
-import { INSTRUMENTS, noteNameFromMidi, pitchClassName, type InstrumentKey, type NoteNaming, type SongKeyMode } from "@/lib/music";
+import {
+  INSTRUMENTS,
+  OCTAVE_STYLES,
+  noteNameFromMidi,
+  pitchClassName,
+  type InstrumentKey,
+  type NoteNaming,
+  type OctaveStyle,
+  type SongKeyMode,
+} from "@/lib/music";
 import { SCALES } from "@/lib/song-editor";
 import { PianoKeyboard } from "@/components/admin/PianoKeyboard";
 
@@ -27,6 +36,7 @@ export function SongPianoPanel({
   songKey,
   songKeyMode,
   naming,
+  octaveStyle,
   volume,
   tempTranspose,
   baseOctave,
@@ -38,6 +48,7 @@ export function SongPianoPanel({
   onSongKey,
   onSongKeyMode,
   onNaming,
+  onOctaveStyle,
   onVolume,
   onTranspose,
   onTempTranspose,
@@ -50,6 +61,7 @@ export function SongPianoPanel({
   songKey: number;
   songKeyMode: SongKeyMode;
   naming: NoteNaming;
+  octaveStyle: OctaveStyle;
   volume: number;
   tempTranspose: number;
   baseOctave: number;
@@ -61,6 +73,7 @@ export function SongPianoPanel({
   onSongKey: (pc: number) => void;
   onSongKeyMode: (mode: SongKeyMode) => void;
   onNaming: (naming: NoteNaming) => void;
+  onOctaveStyle: (style: OctaveStyle) => void;
   onVolume: (v: number) => void;
   onTranspose: (semitones: number) => void;
   onTempTranspose: (delta: number) => void;
@@ -145,6 +158,15 @@ export function SongPianoPanel({
             <option value="solfege">Do Re Mi (Đô Rê Mi...)</option>
           </select>
         </Group>
+        <Group label="Ký hiệu quãng tám (chỉ xem)">
+          <select value={octaveStyle} onChange={(e) => onOctaveStyle(e.target.value as OctaveStyle)} className={selectClass}>
+            {OCTAVE_STYLES.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </Group>
         <Group label="Âm lượng">
           <input
             type="range"
@@ -163,7 +185,7 @@ export function SongPianoPanel({
           Octave -
         </button>
         <span className="text-xs text-muted">
-          Bàn phím máy tính: bát độ gốc {noteNameFromMidi(baseOctave, "letter")} (phím A)
+          Bàn phím máy tính: bát độ gốc {noteNameFromMidi(baseOctave, "letter", octaveStyle)} (phím A)
         </span>
         <button type="button" onClick={() => onOctave(12)} className={smallBtn}>
           Octave +
@@ -173,6 +195,7 @@ export function SongPianoPanel({
 
       <PianoKeyboard
         naming={naming}
+        octaveStyle={octaveStyle}
         scaleRoot={scaleRoot}
         scaleType={scaleType}
         pressed={pressed}

@@ -15,6 +15,7 @@ import {
   wordNotes,
   type InstrumentKey,
   type NoteNaming,
+  type OctaveStyle,
   type SongKeyMode,
   type SongLine,
   type SongWord,
@@ -121,6 +122,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
   const [editingLyrics, setEditingLyrics] = useState(initial.lines.length === 0);
   const [lyricsDraft, setLyricsDraft] = useState(() => lyricsToText(initial.lines));
   const [tempTranspose, setTempTranspose] = useState(0);
+  const [octaveStyle, setOctaveStyle] = useState<OctaveStyle>("mark");
   const [volume, setVolume] = useState(0.6);
   const [baseOctave, setBaseOctave] = useState(60);
   const [pressed, setPressed] = useState<number[]>([]);
@@ -722,6 +724,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
               active={active}
               instrument={values.instrument}
               naming={values.naming}
+              octaveStyle={octaveStyle}
               tempTranspose={tempTranspose}
               editing={editingLyrics}
               draft={lyricsDraft}
@@ -741,7 +744,12 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
               onTransposeLines={transposeSomeLines}
             />
             {isSax && (
-              <SongFingeringList writtenNotes={writtenNotes} activeWritten={activeWritten} onPick={pickFingering} />
+              <SongFingeringList
+                writtenNotes={writtenNotes}
+                activeWritten={activeWritten}
+                octaveStyle={octaveStyle}
+                onPick={pickFingering}
+              />
             )}
           </div>
 
@@ -753,6 +761,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
               songKey={values.songKey}
               songKeyMode={values.songKeyMode}
               naming={values.naming}
+              octaveStyle={octaveStyle}
               volume={volume}
               tempTranspose={tempTranspose}
               baseOctave={baseOctave}
@@ -764,6 +773,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
               onSongKey={(songKey) => patch({ songKey })}
               onSongKeyMode={(songKeyMode) => patch({ songKeyMode })}
               onNaming={(naming) => patch({ naming })}
+              onOctaveStyle={setOctaveStyle}
               onVolume={setVolume}
               onTranspose={transpose}
               onTempTranspose={(d) => setTempTranspose((t) => t + d)}

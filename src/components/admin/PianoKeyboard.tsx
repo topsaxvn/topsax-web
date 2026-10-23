@@ -1,6 +1,6 @@
 "use client";
 
-import { noteNameFromMidi, type NoteNaming } from "@/lib/music";
+import { noteNameFromMidi, type NoteNaming, type OctaveStyle } from "@/lib/music";
 import { PIANO_MIDI_MAX, PIANO_MIDI_MIN, isBlackKey, isInScale } from "@/lib/song-editor";
 
 const WHITE_W = 40;
@@ -8,6 +8,7 @@ const BLACK_W = 26;
 
 type Props = {
   naming: NoteNaming;
+  octaveStyle: OctaveStyle;
   scaleRoot: number;
   scaleType: string;
   pressed: number[];
@@ -31,7 +32,7 @@ function keyClass(midi: number, black: boolean, scaleRoot: number, scaleType: st
   return `z-0 h-[180px] w-[40px] text-[#333] ${bg}`;
 }
 
-export function PianoKeyboard({ naming, scaleRoot, scaleType, pressed, onKeyPress }: Props) {
+export function PianoKeyboard({ naming, octaveStyle, scaleRoot, scaleType, pressed, onKeyPress }: Props) {
   const whiteKeys: number[] = [];
   const blackKeys: { midi: number; whiteBefore: number }[] = [];
   let whiteCount = 0;
@@ -58,7 +59,7 @@ export function PianoKeyboard({ naming, scaleRoot, scaleType, pressed, onKeyPres
             onPointerDown={(e) => onKeyPress(midi, e.shiftKey)}
             className={`${base} ${keyClass(midi, false, scaleRoot, scaleType, pressed.includes(midi))}`}
           >
-            <span className="pointer-events-none">{noteNameFromMidi(midi, naming)}</span>
+            <span className="pointer-events-none">{noteNameFromMidi(midi, naming, octaveStyle)}</span>
           </div>
         ))}
         {blackKeys.map(({ midi, whiteBefore }) => (
@@ -69,7 +70,7 @@ export function PianoKeyboard({ naming, scaleRoot, scaleType, pressed, onKeyPres
             onPointerDown={(e) => onKeyPress(midi, e.shiftKey)}
             className={`${base} ${keyClass(midi, true, scaleRoot, scaleType, pressed.includes(midi))}`}
           >
-            <span className="pointer-events-none">{noteNameFromMidi(midi, naming)}</span>
+            <span className="pointer-events-none">{noteNameFromMidi(midi, naming, octaveStyle)}</span>
           </div>
         ))}
       </div>

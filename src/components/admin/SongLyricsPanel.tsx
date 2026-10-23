@@ -6,6 +6,7 @@ import {
   wordNotes,
   type InstrumentKey,
   type NoteNaming,
+  type OctaveStyle,
   type SongLine,
 } from "@/lib/music";
 import type { ActiveWord } from "@/lib/song-editor";
@@ -29,6 +30,7 @@ export function SongLyricsPanel({
   active,
   instrument,
   naming,
+  octaveStyle,
   tempTranspose,
   editing,
   draft,
@@ -51,6 +53,7 @@ export function SongLyricsPanel({
   active: ActiveWord;
   instrument: InstrumentKey;
   naming: NoteNaming;
+  octaveStyle: OctaveStyle;
   tempTranspose: number;
   editing: boolean;
   draft: string;
@@ -70,7 +73,7 @@ export function SongLyricsPanel({
   onTransposeLines: (lines: number[], semitones: number) => void;
 }) {
   const displayNote = (midi: number) =>
-    noteNameFromMidi(transposeForInstrument(midi + tempTranspose, instrument), naming);
+    noteNameFromMidi(transposeForInstrument(midi + tempTranspose, instrument), naming, octaveStyle);
 
   return (
     <div>
