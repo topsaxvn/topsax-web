@@ -58,8 +58,14 @@ export function pitchClassName(pc: number, naming: NoteNaming): string {
   return arr[((pc % 12) + 12) % 12];
 }
 
+// Đô Rê Mi đánh số quãng theo kèn: Đô thấp nhất của saxophone (C4 ký âm) là
+// Đô1, Đô quãng trên là Đô2... (La#0, Si0 là hai nốt thấp hơn Đô1). Kiểu chữ
+// giữ cách đánh số chuẩn C4 = Đô giữa.
+const SOLFEGE_OCTAVE_OFFSET = 3;
+
 export function noteNameFromMidi(midi: number, naming: NoteNaming): string {
-  return `${pitchClassName(midi % 12, naming)}${Math.floor(midi / 12) - 1}`;
+  const octave = Math.floor(midi / 12) - 1 - (naming === "solfege" ? SOLFEGE_OCTAVE_OFFSET : 0);
+  return `${pitchClassName(midi % 12, naming)}${octave}`;
 }
 
 // Tên giọng gồm cả trưởng/thứ - ký hiệu chữ dùng hậu tố "m" (Am, Bm, Cm...),

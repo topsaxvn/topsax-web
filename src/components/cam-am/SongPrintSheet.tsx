@@ -57,7 +57,7 @@ export function SongPrintSheet({
       `${temp > 0 ? "+" : ""}${temp} nửa cung so với bản gốc ${keyName(pitchClass(song.song_key))}`,
     ]);
   }
-  info.push(["Ký hiệu nốt", naming === "solfege" ? "Đô Rê Mi" : "Chữ (C D E)"]);
+  info.push(["Ký hiệu nốt", naming === "solfege" ? "Đô Rê Mi (Đô1 = Đô thấp nhất của kèn)" : "Chữ (C4 = Đô giữa)"]);
 
   return createPortal(
     <div className={`${PRINT_SHEET_CLASS} hidden bg-white text-black [print-color-adjust:exact] print:block`}>

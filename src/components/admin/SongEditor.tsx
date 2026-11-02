@@ -68,7 +68,7 @@ const EMPTY_VALUES: Values = {
   scaleRoot: 0,
   scaleType: "major",
   instrument: "piano",
-  naming: "letter",
+  naming: "solfege",
   songKey: 0,
   songKeyMode: "major",
   lines: [],
@@ -591,7 +591,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
         scale_root: Number(data.scaleRoot) || 0,
         scale_type: typeof data.scaleType === "string" && data.scaleType ? data.scaleType : "major",
         instrument: typeof data.instrument === "string" && data.instrument ? data.instrument : "piano",
-        naming: data.naming === "solfege" ? "solfege" : "letter",
+        naming: data.naming === "letter" ? "letter" : "solfege",
         song_key: Number(data.songKey) || 0,
         song_key_mode: data.songKeyMode === "minor" ? "minor" : "major",
         published: false,
@@ -741,7 +741,12 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
               onTransposeLines={transposeSomeLines}
             />
             {isSax && (
-              <SongFingeringList writtenNotes={writtenNotes} activeWritten={activeWritten} onPick={pickFingering} />
+              <SongFingeringList
+                writtenNotes={writtenNotes}
+                activeWritten={activeWritten}
+                naming={values.naming}
+                onPick={pickFingering}
+              />
             )}
           </div>
 

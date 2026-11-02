@@ -141,8 +141,8 @@ export function SongPianoPanel({
         </Group>
         <Group label="Tên nốt">
           <select value={naming} onChange={(e) => onNaming(e.target.value as NoteNaming)} className={selectClass}>
-            <option value="letter">Chữ (C, D, E...)</option>
-            <option value="solfege">Do Re Mi (Đô Rê Mi...)</option>
+            <option value="solfege">Đô Rê Mi (Đô1 = Đô thấp nhất của kèn)</option>
+            <option value="letter">Chữ (C4, D4, E4...)</option>
           </select>
         </Group>
         <Group label="Âm lượng">
