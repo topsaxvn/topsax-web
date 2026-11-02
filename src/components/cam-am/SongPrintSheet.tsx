@@ -7,6 +7,7 @@ import { siteConfig } from "@/lib/site-config";
 import {
   INSTRUMENTS,
   noteNameFromMidi,
+  usesSaxSolfege,
   songKeyName,
   transposeForInstrument,
   wordNotes,
@@ -57,7 +58,14 @@ export function SongPrintSheet({
       `${temp > 0 ? "+" : ""}${temp} nửa cung so với bản gốc ${keyName(pitchClass(song.song_key))}`,
     ]);
   }
-  info.push(["Ký hiệu nốt", naming === "solfege" ? "Đô Rê Mi (Đô1 = Đô thấp nhất của kèn)" : "Chữ (C4 = Đô giữa)"]);
+  info.push([
+    "Ký hiệu nốt",
+    usesSaxSolfege(naming, instrument)
+      ? "Đô Rê Mi (Đô = Đô thấp nhất của kèn, Đô2 = cao hơn một quãng tám)"
+      : naming === "solfege"
+        ? "Đô Rê Mi (Đô4 = Đô giữa)"
+        : "Chữ (C4 = Đô giữa)",
+  ]);
 
   return createPortal(
     <div className={`${PRINT_SHEET_CLASS} hidden bg-white text-black [print-color-adjust:exact] print:block`}>
@@ -99,7 +107,7 @@ export function SongPrintSheet({
                   <span className="whitespace-nowrap text-[15px]">{word.text}</span>
                   <span className="min-h-[1em] whitespace-nowrap text-[11px] font-bold text-brass-deep">
                     {notes.length > 0
-                      ? notes.map((n) => noteNameFromMidi(transposeForInstrument(n + temp, instrument), naming)).join("-")
+                      ? notes.map((n) => noteNameFromMidi(transposeForInstrument(n + temp, instrument), naming, instrument)).join("-")
                       : ""}
                   </span>
                 </div>
@@ -117,7 +125,7 @@ export function SongPrintSheet({
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-4">
             {fingerings.map(({ written, src }) => (
               <div key={written} className="flex w-[15mm] flex-col items-center gap-1">
-                <p className="text-[11px] font-bold">{noteNameFromMidi(written, naming)}</p>
+                <p className="text-[11px] font-bold">{noteNameFromMidi(written, naming, instrument)}</p>
                 {src ? (
                   // eslint-disable-next-line @next/next/no-img-element -- ảnh base64 data URI, không dùng next/image
                   <img src={src} alt="" className="w-full" />

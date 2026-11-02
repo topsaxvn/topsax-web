@@ -70,7 +70,7 @@ export function SongLyricsPanel({
   onTransposeLines: (lines: number[], semitones: number) => void;
 }) {
   const displayNote = (midi: number) =>
-    noteNameFromMidi(transposeForInstrument(midi + tempTranspose, instrument), naming);
+    noteNameFromMidi(transposeForInstrument(midi + tempTranspose, instrument), naming, instrument);
 
   return (
     <div>

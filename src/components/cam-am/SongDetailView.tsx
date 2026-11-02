@@ -24,7 +24,8 @@ export function SongDetailView({ song }: { song: SongDetail }) {
   // Mặc định mở bài ở tone kèn alto sax (nhạc cụ chủ lực của TOPSAX) thay vì
   // tone gốc lưu trong DB (thường là piano/concert pitch).
   const [instrument, setInstrument] = useState<InstrumentKey>("altoSax");
-  // Mặc định ghi nốt kiểu Đô Rê Mi (Đô1 = Đô thấp nhất của kèn), người xem vẫn đổi được sang kiểu chữ.
+  // Mặc định ghi nốt kiểu Đô Rê Mi (với saxophone: Đô = Đô thấp nhất của kèn, không ghi số),
+  // người xem vẫn đổi được sang kiểu chữ.
   const [naming, setNaming] = useState<NoteNaming>("solfege");
   const [temp, setTemp] = useState(0);
   const [fingerings, setFingerings] = useState<FingeringData | null>(null);
@@ -34,7 +35,7 @@ export function SongDetailView({ song }: { song: SongDetail }) {
   const isSaxFamily = SAX_FAMILY.includes(instrument);
 
   const displayNote = (midi: number) =>
-    noteNameFromMidi(transposeForInstrument(midi + temp, instrument), naming);
+    noteNameFromMidi(transposeForInstrument(midi + temp, instrument), naming, instrument);
 
   useEffect(() => {
     if (!isSaxFamily || fingerings) return;
@@ -139,7 +140,7 @@ export function SongDetailView({ song }: { song: SongDetail }) {
             onChange={(e) => setNaming(e.target.value as NoteNaming)}
             className={fieldClass}
           >
-            <option value="solfege">Đô Rê Mi (Đô1 = Đô thấp nhất của kèn)</option>
+            <option value="solfege">Đô Rê Mi (Đô Rê Mi...)</option>
             <option value="letter">Chữ (C4, D4, E4...)</option>
           </select>
         </label>
@@ -246,7 +247,7 @@ export function SongDetailView({ song }: { song: SongDetail }) {
               const src = fingeringSrcForWritten(written);
               return (
                 <div key={written} className="flex flex-col items-center gap-1">
-                  <p className="text-sm font-semibold text-ink">{noteNameFromMidi(written, naming)}</p>
+                  <p className="text-sm font-semibold text-ink">{noteNameFromMidi(written, naming, instrument)}</p>
                   {src ? (
                     // eslint-disable-next-line @next/next/no-img-element -- ảnh base64 data URI, không dùng next/image
                     <img src={src} alt="" className="w-14 max-w-none" />

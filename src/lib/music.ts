@@ -58,14 +58,22 @@ export function pitchClassName(pc: number, naming: NoteNaming): string {
   return arr[((pc % 12) + 12) % 12];
 }
 
-// Đô Rê Mi đánh số quãng theo kèn: Đô thấp nhất của saxophone (C4 ký âm) là
-// Đô1, Đô quãng trên là Đô2... (La#0, Si0 là hai nốt thấp hơn Đô1). Kiểu chữ
-// giữ cách đánh số chuẩn C4 = Đô giữa.
-const SOLFEGE_OCTAVE_OFFSET = 3;
+// Saxophone ghi Đô Rê Mi đánh số quãng theo kèn: Đô thấp nhất của kèn (C4 ký
+// âm) là quãng 1 và không ghi số (Đô, Rê...), quãng trên là Đô2, Đô3... (La#0,
+// Si0 là hai nốt thấp hơn Đô). Nhạc cụ khác và kiểu chữ giữ cách đánh số chuẩn
+// C4 / Đô4 = Đô giữa.
+const SAX_SOLFEGE_OCTAVE_OFFSET = 3;
 
-export function noteNameFromMidi(midi: number, naming: NoteNaming): string {
-  const octave = Math.floor(midi / 12) - 1 - (naming === "solfege" ? SOLFEGE_OCTAVE_OFFSET : 0);
-  return `${pitchClassName(midi % 12, naming)}${octave}`;
+export function usesSaxSolfege(naming: NoteNaming, instrument?: InstrumentKey): boolean {
+  return naming === "solfege" && instrument !== undefined && SAX_FAMILY.includes(instrument);
+}
+
+export function noteNameFromMidi(midi: number, naming: NoteNaming, instrument?: InstrumentKey): string {
+  const name = pitchClassName(midi % 12, naming);
+  const octave = Math.floor(midi / 12) - 1;
+  if (!usesSaxSolfege(naming, instrument)) return `${name}${octave}`;
+  const saxOctave = octave - SAX_SOLFEGE_OCTAVE_OFFSET;
+  return saxOctave === 1 ? name : `${name}${saxOctave}`;
 }
 
 // Tên giọng gồm cả trưởng/thứ - ký hiệu chữ dùng hậu tố "m" (Am, Bm, Cm...),

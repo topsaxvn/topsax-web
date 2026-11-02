@@ -745,6 +745,7 @@ export function SongEditor({ song }: { song?: SongAdminDetail }) {
                 writtenNotes={writtenNotes}
                 activeWritten={activeWritten}
                 naming={values.naming}
+                instrument={values.instrument}
                 onPick={pickFingering}
               />
             )}
