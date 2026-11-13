@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { SignOutButton } from "@/components/course/SignOutButton";
 import { getCourseView } from "@/data-access/course";
-import { COURSE_LOGIN_PATH, COURSE_PLAYER_PATH, formatCoursePrice } from "@/lib/course";
+import { COURSE_LOGIN_PATH, COURSE_PLAYER_PATH, formatCoursePrice, ITEM_KIND_LABEL } from "@/lib/course";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils/cn";
 import { buyCourse } from "../actions";
@@ -19,6 +19,27 @@ export const metadata: Metadata = {
 
 const PLAYER_BTN =
   "inline-flex items-center justify-center gap-2 rounded-full bg-brass px-6 py-3 text-sm font-semibold text-ink hover:bg-brass-soft";
+
+function StarRow({ n, small, label }: { n: number; small?: boolean; label: string }) {
+  return (
+    <span aria-label={label} title={label} className={cn("shrink-0 tracking-tight", small ? "text-xs" : "text-sm")}>
+      {[1, 2, 3].map((k) => (
+        <span key={k} aria-hidden className={k <= n ? "text-brass-deep" : "text-border"}>
+          ★
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
 
 const BUY_ERRORS: Record<string, string> = {
   "da-co": "Bạn đã có khóa học này.",
@@ -47,9 +68,17 @@ export default async function CoursePage({
   const openToMe = hasAccess || freeCourse;
   // phải đăng nhập (Google) mới học được
   const loginToLearn = `${COURSE_LOGIN_PATH}?next=${encodeURIComponent(COURSE_PLAYER_PATH)}`;
-  const byDay = new Map(lessons.map((l) => [l.day, l]));
   const done = lessons.filter((l) => l.stars !== null).length;
   const freeDays = lessons.filter((l) => l.is_free).map((l) => l.day);
+  // người học của khóa này (đã đăng nhập và học được): thấy tiến độ, bấm vào từng ngày / bài
+  const learner = Boolean(user) && openToMe;
+  // ngày đang học: ngày đã mở đầu tiên chưa xong
+  const current = lessons.find((l) => l.open && l.stars === null) ?? null;
+  // màn hình học mở thẳng ngày / bài (sax-tap/src/App.tsx openFromLink)
+  const dayHref = (day: number) => `${COURSE_PLAYER_PATH}?ngay=${day}`;
+  const pieceHref = (day: number, item: string) => `${COURSE_PLAYER_PATH}?ngay=${day}&bai=${item}`;
+  const previousDay = (day: number) => [...lessons].reverse().find((l) => l.day < day)?.day ?? day - 1;
+  const learnHref = current ? dayHref(current.day) : COURSE_PLAYER_PATH;
 
   return (
     <Container className="py-10 lg:py-14">
@@ -87,64 +116,128 @@ export default async function CoursePage({
             ))}
           </ul>
 
-          <h2 className="mt-10 text-xl font-semibold text-ink">
-            {course.total_days} ngày học
-            <span className="ml-2 text-sm font-normal text-muted">
-              {lessons.length < course.total_days ? `· đã có ${lessons.length} bài` : ""}
-            </span>
-          </h2>
-          <ol className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-10">
-            {Array.from({ length: course.total_days }, (_, k) => k + 1).map((day) => {
-              const l = byDay.get(day);
-              const open = l && (openToMe || l.is_free);
-              return (
-                <li
-                  key={day}
-                  title={l ? `Ngày ${day}${l.title ? `: ${l.title}` : ""}` : `Ngày ${day}: đang soạn`}
-                  className={cn(
-                    "flex aspect-square flex-col items-center justify-center rounded-xl border text-sm font-semibold",
-                    !l && "border-dashed border-border text-muted/60",
-                    l && l.stars !== null && "border-green-300 bg-green-50 text-green-800",
-                    l && l.stars === null && open && "border-brass/50 bg-paper text-ink",
-                    l && !open && "border-border bg-paper-soft text-muted",
-                  )}
-                >
-                  {day}
-                  {l?.stars != null && <span className="text-[10px] leading-none">{"★".repeat(l.stars)}</span>}
-                  {l && !open && <span className="text-[10px] font-normal leading-none">khóa</span>}
-                  {l && l.is_free && !openToMe && <span className="text-[10px] font-normal leading-none">thử</span>}
-                </li>
-              );
-            })}
-          </ol>
+          <section id="noi-dung" className="mt-10 max-w-3xl scroll-mt-24">
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+              <div>
+                <h2 className="text-xl font-semibold text-ink">Nội dung từng ngày</h2>
+                <p className="mt-1 text-sm text-muted">
+                  Mỗi ngày một bài luyện nốt và một bài hát, kèm bài giảng. Học lần lượt: xong ngày trước mới mở ngày sau.
+                </p>
+              </div>
+            </div>
 
-          {lessons.some((l) => l.items.length) && (
-            <>
-              <h2 className="mt-10 text-xl font-semibold text-ink">Nội dung từng ngày</h2>
-              <p className="mt-1 text-sm text-muted">Mỗi ngày một bài luyện nốt và một bài hát, có bài giảng và video hướng dẫn.</p>
-              <ol className="mt-4 max-w-2xl divide-y divide-border rounded-2xl border border-border bg-paper">
-                {lessons.map((l) => (
-                  <li key={l.id} className="flex gap-4 px-4 py-3">
-                    <span className="w-14 shrink-0 text-sm font-semibold text-brass-deep">Ngày {l.day}</span>
-                    <div className="min-w-0 text-sm">
-                      <p className="font-medium text-ink">
-                        {l.title || l.items.find((i) => i.kind === "song")?.title}
-                        {l.is_free && !openToMe && (
-                          <span className="ml-2 rounded-full bg-brass-soft/50 px-2 py-0.5 text-xs font-normal">học thử</span>
-                        )}
-                      </p>
-                      <p className="mt-0.5 text-muted">
-                        {l.items
-                          .filter((i) => i.kind !== "notes")
-                          .map((i) => i.title)
-                          .join(" · ")}
-                      </p>
+            {learner && (
+              <div className="mt-5 rounded-2xl border border-brass/40 bg-brass-soft/20 p-4 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-muted">Tiến độ của bạn</p>
+                    <p className="mt-0.5 text-lg font-semibold text-ink">
+                      Đã xong {done}/{lessons.length} ngày
+                    </p>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-paper" role="progressbar" aria-valuenow={done} aria-valuemin={0} aria-valuemax={lessons.length}>
+                      <div className="h-full rounded-full bg-brass" style={{ width: `${lessons.length ? (100 * done) / lessons.length : 0}%` }} />
+                    </div>
+                  </div>
+                  {current && (
+                    <a href={dayHref(current.day)} className={cn(PLAYER_BTN, "shrink-0")}>
+                      {done ? "Học tiếp" : "Bắt đầu"}: Ngày {current.day}
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <ol className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-paper">
+              {lessons.map((l) => {
+                const name = l.title || l.items.find((i) => i.kind === "song")?.title || "";
+                const isCurrent = learner && current?.id === l.id;
+                const waiting = learner && !l.open;
+                return (
+                  <li key={l.id} className={cn("flex gap-3 px-4 py-4 sm:gap-4 sm:px-5", isCurrent && "bg-brass-soft/15")}>
+                    {/* số ngày: xong = xanh, đang học = vàng, chưa mở = khóa */}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-semibold",
+                        l.stars !== null && learner
+                          ? "border-green-300 bg-green-50 text-green-700"
+                          : isCurrent
+                            ? "border-brass bg-brass text-ink"
+                            : waiting
+                              ? "border-border bg-paper-soft text-muted"
+                              : "border-border text-ink-soft",
+                      )}
+                    >
+                      {l.stars !== null && learner ? "✓" : waiting ? <LockIcon /> : l.day}
+                    </span>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                        <p className="min-w-0 font-semibold text-ink">
+                          <span className="mr-1.5 text-sm font-semibold text-brass-deep">Ngày {l.day}</span>
+                          {l.open ? (
+                            <a href={dayHref(l.day)} className="hover:text-brass-deep hover:underline">
+                              {name}
+                            </a>
+                          ) : (
+                            name
+                          )}
+                          {l.is_free && !openToMe && (
+                            <span className="ml-2 rounded-full bg-brass-soft/50 px-2 py-0.5 text-xs font-normal">học thử</span>
+                          )}
+                        </p>
+                        {learner &&
+                          (l.stars !== null ? (
+                            <StarRow n={l.stars} label={`Ngày ${l.day} đã xong, ${l.stars} sao`} />
+                          ) : isCurrent ? (
+                            <span className="text-xs font-semibold uppercase tracking-wide text-brass-deep">Đang học</span>
+                          ) : waiting && l.day > 1 ? (
+                            <span className="text-xs text-muted">Học xong ngày {previousDay(l.day)} để mở</span>
+                          ) : null)}
+                      </div>
+
+                      {l.items.length > 0 && (
+                        <ul className="mt-2 space-y-1 text-sm">
+                          {l.items.map((i) => (
+                            <li key={i.id} className="flex items-center justify-between gap-3">
+                              <span className="min-w-0 text-ink-soft">
+                                <span className="text-muted">{ITEM_KIND_LABEL[i.kind]}: </span>
+                                {l.open ? (
+                                  <a
+                                    href={pieceHref(l.day, i.id)}
+                                    className="text-ink underline decoration-border underline-offset-4 hover:text-brass-deep hover:decoration-brass"
+                                  >
+                                    {i.title}
+                                  </a>
+                                ) : (
+                                  i.title
+                                )}
+                              </span>
+                              {learner && i.stars !== null ? (
+                                <StarRow n={i.stars} small label={`${i.stars} sao`} />
+                              ) : (
+                                l.open && (
+                                  <a
+                                    href={pieceHref(l.day, i.id)}
+                                    className="inline-flex shrink-0 items-center gap-1 rounded-full border border-brass/50 px-2.5 py-0.5 text-xs font-semibold text-brass-deep hover:bg-brass-soft/40"
+                                  >
+                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                      <path d="M6 4l14 8-14 8z" />
+                                    </svg>
+                                    Tập
+                                  </a>
+                                )
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   </li>
-                ))}
-              </ol>
-            </>
-          )}
+                );
+              })}
+            </ol>
+          </section>
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -157,8 +250,8 @@ export default async function CoursePage({
                 <p className="mt-1 text-2xl font-semibold text-ink">
                   {done}/{lessons.length} ngày đã học
                 </p>
-                <a href={COURSE_PLAYER_PATH} className={cn(PLAYER_BTN, "mt-5 w-full")}>
-                  Vào học
+                <a href={learnHref} className={cn(PLAYER_BTN, "mt-5 w-full")}>
+                  {current ? `Học tiếp: Ngày ${current.day}` : "Vào học"}
                 </a>
               </>
             ) : freeCourse ? (
@@ -168,8 +261,8 @@ export default async function CoursePage({
                 <p className="mt-1 text-sm text-muted">Mở cả {course.total_days} ngày, học trên điện thoại và máy tính.</p>
                 {user ? (
                   <>
-                    <a href={COURSE_PLAYER_PATH} className={cn(PLAYER_BTN, "mt-5 w-full")}>
-                      Bắt đầu học
+                    <a href={learnHref} className={cn(PLAYER_BTN, "mt-5 w-full")}>
+                      {!current ? "Vào học" : done ? `Học tiếp: Ngày ${current.day}` : "Bắt đầu học"}
                     </a>
                     <p className="mt-3 text-sm text-muted">Tiến độ được lưu vào tài khoản {user.email}.</p>
                   </>

@@ -1,0 +1,11 @@
+Tập Sax / SaxSteps - nguồn âm mẫu và chữ (sample and font credits)
+
+Âm mẫu saxophone / Saxophone samples
+  - University of Iowa Electronic Music Studios, Musical Instrument Samples (MIS)
+  - MusyngKite soundfont, CC-BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/)
+Âm mẫu nhạc đệm / Backing samples
+  - MuseScore General soundfont, MIT License
+
+Chữ / Fonts (SIL Open Font License 1.1, xem fonts/OFL-*.txt)
+  - Figtree
+  - Be Vietnam Pro

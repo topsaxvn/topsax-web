@@ -6,14 +6,23 @@ type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
 type LessonRow = Database["public"]["Tables"]["course_lessons"]["Row"];
 
 export interface CourseItemView {
+  id: string;
   kind: CourseItemKind;
   title: string;
+  /** Kết quả tốt nhất của người đang xem; chưa tập: null. */
+  stars: number | null;
 }
 
 export interface CourseLessonView extends Pick<LessonRow, "id" | "day" | "title" | "is_free"> {
   items: CourseItemView[];
   /** Ngày đã xong (mọi bài luyện nốt, bài hát đều có kết quả): số sao thấp nhất. Chưa xong: null. */
   stars: number | null;
+  /**
+   * Người đang xem vào học ngày này được chưa: có quyền (đã đăng ký / khóa
+   * miễn phí / ngày học thử) VÀ đã học xong ngày trước (học lần lượt, như
+   * màn hình học - sax-tap/src/content.ts reachableDays). Admin: mọi ngày.
+   */
+  open: boolean;
 }
 
 export type CourseOrderRow = Database["public"]["Tables"]["course_orders"]["Row"];
@@ -139,6 +148,8 @@ export async function getCourseView(slug: string): Promise<CourseView | null> {
     const { data: progress } = await supabase
       .from("course_item_progress")
       .select("item_id,stars")
+      // (admin đọc được tiến độ của mọi người: chỉ lấy của chính mình)
+      .eq("user_id", user.id)
       .in(
         "item_id",
         items.map((i) => i.id),
@@ -146,21 +157,35 @@ export async function getCourseView(slug: string): Promise<CourseView | null> {
     for (const p of progress ?? []) stars.set(p.item_id, p.stars);
   }
 
+  const isAdmin = Boolean(adminRes.data);
+  const enrolled = Boolean(enrollRes.data);
+  // giá 0đ + đã đăng nhập: học được cả khóa (20261113000000_free_course.sql)
+  const freeForMe = Boolean(user) && course.status === "published" && course.price <= 0;
+  const views: CourseLessonView[] = lessons.map((l) => {
+    const mine = items.filter((i) => i.lesson_id === l.id).sort(compareItems);
+    const required = mine.filter((i) => i.kind !== "bonus");
+    const done = required.length > 0 && required.every((i) => stars.has(i.id));
+    return {
+      ...l,
+      items: mine.map((i) => ({ id: i.id, kind: i.kind, title: i.title, stars: stars.get(i.id) ?? null })),
+      stars: done ? Math.min(...required.map((i) => stars.get(i.id)!)) : null,
+      open: false,
+    };
+  });
+  // học lần lượt: ngày đầu luôn mở, ngày sau mở khi ngày trước xong
+  let reachable = true;
+  for (const v of views) {
+    const allowed = isAdmin || enrolled || freeForMe || (Boolean(user) && v.is_free);
+    v.open = Boolean(user) && allowed && (isAdmin || reachable);
+    reachable = reachable && allowed && v.stars !== null;
+  }
+
   return {
     course,
-    lessons: lessons.map((l) => {
-      const mine = items.filter((i) => i.lesson_id === l.id).sort(compareItems);
-      const required = mine.filter((i) => i.kind !== "bonus");
-      const done = required.length > 0 && required.every((i) => stars.has(i.id));
-      return {
-        ...l,
-        items: mine.map((i) => ({ kind: i.kind, title: i.title })),
-        stars: done ? Math.min(...required.map((i) => stars.get(i.id)!)) : null,
-      };
-    }),
+    lessons: views,
     user: user ? { id: user.id, email: user.email ?? "" } : null,
-    isAdmin: Boolean(adminRes.data),
-    enrolled: Boolean(enrollRes.data),
+    isAdmin,
+    enrolled,
     // (bảng đơn hàng chưa có khi file SQL thanh toán chưa chạy: coi như không có đơn)
     pendingOrder: orderRes.error ? null : orderRes.data,
   };
