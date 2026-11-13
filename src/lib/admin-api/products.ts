@@ -90,6 +90,40 @@ export const productsApi = {
     if (error) throw new Error(error.message);
   },
 
+  // --- Đề xuất cho khóa học (supabase/migrations/20261114000000_course_products.sql) ---
+
+  /** Các khóa học để chọn trong form. Rỗng khi bảng khóa học / đề xuất chưa có (file SQL chưa chạy). */
+  async listCourses(): Promise<{ id: string; title: string }[]> {
+    const [courses, links] = await Promise.all([
+      supabase.from("courses").select("id,title").order("created_at"),
+      supabase.from("course_products").select("course_id").limit(1),
+    ]);
+    if (courses.error || links.error) return [];
+    return courses.data;
+  },
+
+  /** Khóa học mà sản phẩm đang được đề xuất. */
+  async courseIdsOf(productId: string): Promise<string[]> {
+    const { data, error } = await supabase.from("course_products").select("course_id").eq("product_id", productId);
+    if (error) return [];
+    return data.map((r) => r.course_id);
+  },
+
+  /** Đặt lại danh sách khóa học đề xuất sản phẩm này (bỏ tích = xóa khỏi khóa đó). */
+  async setCourses(productId: string, courseIds: string[]): Promise<void> {
+    const del = supabase.from("course_products").delete().eq("product_id", productId);
+    const { error: delError } = courseIds.length ? await del.not("course_id", "in", `(${courseIds.join(",")})`) : await del;
+    if (delError) throw new Error(delError.message);
+    if (!courseIds.length) return;
+    const { error } = await supabase
+      .from("course_products")
+      .upsert(
+        courseIds.map((course_id) => ({ course_id, product_id: productId })),
+        { onConflict: "course_id,product_id", ignoreDuplicates: true },
+      );
+    if (error) throw new Error(error.message);
+  },
+
   async setStatus(id: string, status: Database["public"]["Enums"]["product_status"]): Promise<void> {
     const { error } = await supabase.from("products").update({ status }).eq("id", id);
     if (error) throw new Error(error.message);

@@ -5,16 +5,21 @@ import { ProductForm } from "@/components/admin/ProductForm";
 import { NewProductImageUpload } from "@/components/admin/NewProductImageUpload";
 import { categoriesApi } from "@/lib/admin-api/categories";
 import { brandsApi } from "@/lib/admin-api/brands";
+import { productsApi } from "@/lib/admin-api/products";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { Category } from "@/data-access/categories";
 import type { Brand } from "@/data-access/brands";
 
 export function NewProductPageClient() {
-  const [data, setData] = useState<{ categories: Category[]; brands: Brand[] } | null>(null);
+  const [data, setData] = useState<{
+    categories: Category[];
+    brands: Brand[];
+    courses: { id: string; title: string }[];
+  } | null>(null);
 
   useEffect(() => {
-    Promise.all([categoriesApi.listAll(), brandsApi.listAll()]).then(([categories, brands]) =>
-      setData({ categories, brands }),
+    Promise.all([categoriesApi.listAll(), brandsApi.listAll(), productsApi.listCourses()]).then(([categories, brands, courses]) =>
+      setData({ categories, brands, courses }),
     );
   }, []);
 
@@ -26,6 +31,7 @@ export function NewProductPageClient() {
           <ProductForm
             categories={data.categories}
             brands={data.brands}
+            courses={data.courses}
             submitLabel="Tạo sản phẩm"
             imagesSection={<NewProductImageUpload />}
           />

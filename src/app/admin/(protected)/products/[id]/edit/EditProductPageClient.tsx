@@ -18,6 +18,8 @@ type LoadedState = {
   brands: Brand[];
   product: ProductDetail | null;
   images: ProductImageRow[];
+  courses: { id: string; title: string }[];
+  courseIds: string[];
 };
 
 export function EditProductPageClient() {
@@ -27,11 +29,16 @@ export function EditProductPageClient() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([categoriesApi.listAll(), brandsApi.listAll(), productsApi.getById(id), productImagesApi.list(id)]).then(
-      ([categories, brands, product, images]) => {
-        if (!cancelled) setData({ categories, brands, product, images });
-      },
-    );
+    Promise.all([
+      categoriesApi.listAll(),
+      brandsApi.listAll(),
+      productsApi.getById(id),
+      productImagesApi.list(id),
+      productsApi.listCourses(),
+      productsApi.courseIdsOf(id),
+    ]).then(([categories, brands, product, images, courses, courseIds]) => {
+      if (!cancelled) setData({ categories, brands, product, images, courses, courseIds });
+    });
     return () => {
       cancelled = true;
     };
@@ -46,7 +53,14 @@ export function EditProductPageClient() {
         {data && data.product ? (
           <>
             <ProductImageManager productId={id} slug={data.product.slug} images={data.images} />
-            <ProductForm categories={data.categories} brands={data.brands} product={data.product} submitLabel="Lưu thay đổi" />
+            <ProductForm
+              categories={data.categories}
+              brands={data.brands}
+              product={data.product}
+              courses={data.courses}
+              courseIds={data.courseIds}
+              submitLabel="Lưu thay đổi"
+            />
           </>
         ) : (
           <div className="space-y-4">

@@ -106,6 +106,58 @@ export async function getProducts(filters: ProductFilters = {}): Promise<Product
   return (data as WithRelations[]).map(toSummary);
 }
 
+/**
+ * Sản phẩm đề xuất cho một khóa học (admin tích ở form sản phẩm, bảng
+ * course_products - supabase/migrations/20261114000000_course_products.sql).
+ * Chỉ sản phẩm còn hàng; kèn trước, phụ kiện sau, rồi theo position.
+ * `fallback`: chưa đề xuất sản phẩm nào (hoặc bảng chưa có) thì trả về sản
+ * phẩm nổi bật, để sidebar không trống.
+ */
+export async function getCourseProducts(
+  courseId: string,
+  limit = 12,
+): Promise<{ products: ProductSummary[]; fallback: boolean }> {
+  const supabase = createPublicClient();
+  const { data: links, error: linkError } = await supabase
+    .from("course_products")
+    .select("product_id,position")
+    .eq("course_id", courseId);
+
+  if (!linkError && links.length > 0) {
+    const position = new Map(links.map((l) => [l.product_id, l.position]));
+    const { data, error } = await supabase
+      .from("products")
+      .select(LIST_SELECT)
+      .in(
+        "id",
+        links.map((l) => l.product_id),
+      )
+      .eq("status", "available");
+    if (error) throw error;
+    const isHorn = (p: ProductSummary) => p.category?.slug === "saxophone" || p.category?.parent?.slug === "saxophone";
+    const products = (data as WithRelations[])
+      .map(toSummary)
+      .sort(
+        (a, b) =>
+          Number(isHorn(b)) - Number(isHorn(a)) ||
+          (position.get(a.id) ?? 0) - (position.get(b.id) ?? 0) ||
+          b.created_at.localeCompare(a.created_at),
+      )
+      .slice(0, limit);
+    if (products.length > 0) return { products, fallback: false };
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(LIST_SELECT)
+    .eq("featured", true)
+    .eq("status", "available")
+    .order("created_at", { ascending: false })
+    .limit(8);
+  if (error) throw error;
+  return { products: (data as WithRelations[]).map(toSummary), fallback: true };
+}
+
 export async function getFeaturedProducts(limit = 4): Promise<ProductSummary[]> {
   const supabase = await createClient();
   const { data, error } = await supabase

@@ -3,11 +3,14 @@
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/lib/site-config";
 
-// Ẩn ở trang Cảm âm: khu vực đó có sẵn popup sản phẩm nổi bật riêng chiếm
-// chỗ dưới màn hình trên mobile, không cần thêm thanh liên hệ.
+// Ẩn ở trang Cảm âm và trang một khóa học: các trang đó có sẵn popup sản
+// phẩm (nổi bật / đề xuất cho khóa học) chiếm chỗ dưới màn hình trên mobile,
+// không cần thêm thanh liên hệ.
+const COURSE_PAGE = /^\/khoa-hoc\/(?!dang-nhap$|xac-thuc$|hoc$)[^/]+$/;
+
 export function MobileContactBar() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/cam-am")) return null;
+  if (pathname?.startsWith("/cam-am") || (pathname && COURSE_PAGE.test(pathname))) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-paper lg:hidden">

@@ -372,6 +372,13 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["course_enrollments"]["Insert"]>;
         Relationships: [];
       };
+      // supabase/migrations/20261114000000_course_products.sql
+      course_products: {
+        Row: { course_id: string; product_id: string; position: number; created_at: string };
+        Insert: { course_id: string; product_id: string; position?: number };
+        Update: Partial<Database["public"]["Tables"]["course_products"]["Insert"]>;
+        Relationships: [];
+      };
       // Từ đây: supabase/migrations/20261111000000_course_day_items.sql
       course_items: {
         Row: {

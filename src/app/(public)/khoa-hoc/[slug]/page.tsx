@@ -3,7 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { SignOutButton } from "@/components/course/SignOutButton";
+import { FeaturedProductsMobileSheet } from "@/components/product/FeaturedProductsMobileSheet";
+import { FeaturedProductsSidebar } from "@/components/product/FeaturedProductsSidebar";
 import { getCourseView } from "@/data-access/course";
+import { getCourseProducts } from "@/data-access/products";
 import { COURSE_LOGIN_PATH, COURSE_PLAYER_PATH, formatCoursePrice, ITEM_KIND_LABEL } from "@/lib/course";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils/cn";
@@ -60,6 +63,9 @@ export default async function CoursePage({
   const view = await getCourseView(slug);
   if (!view) notFound();
   const { course, lessons, user, isAdmin, enrolled, pendingOrder } = view;
+  // sidebar sản phẩm đề xuất (lỗi thì bỏ sidebar, không làm hỏng trang khóa học)
+  const recs = await getCourseProducts(course.id).catch(() => ({ products: [], fallback: true }));
+  const recTitle = recs.fallback ? "Sản phẩm nổi bật" : "Đề xuất cho khóa học";
   const canBuy = course.status === "published" && course.price > 0;
   const here = `/khoa-hoc/${course.slug}`;
   const hasAccess = isAdmin || enrolled;
@@ -240,8 +246,9 @@ export default async function CoursePage({
           </section>
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-2xl border border-border bg-paper p-5 shadow-sm">
+        {/* sticky cả cột: thẻ học phí luôn thấy, danh sách sản phẩm co lại vừa màn hình */}
+        <aside className="lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-7rem)] lg:flex-col lg:gap-4 lg:self-start">
+          <div className="shrink-0 rounded-2xl border border-border bg-paper p-5 shadow-sm">
             {hasAccess ? (
               <>
                 <p className="text-sm text-muted">
@@ -342,8 +349,21 @@ export default async function CoursePage({
               </div>
             )}
           </div>
+
+          {/* máy tính: dưới thẻ học phí, cuộn trong phần còn lại của màn hình */}
+          <FeaturedProductsSidebar
+            products={recs.products}
+            title={recTitle}
+            note={recs.fallback ? undefined : "Kèn, béc, dăm và phụ kiện cho người mới bắt đầu."}
+            showCategory
+            fill
+            className="hidden lg:flex"
+          />
         </aside>
       </div>
+
+      {/* điện thoại: popup ở đáy màn hình, thu nhỏ được (thay thanh liên hệ) */}
+      <FeaturedProductsMobileSheet products={recs.products} title={recTitle} id="course-products-sheet" />
     </Container>
   );
 }

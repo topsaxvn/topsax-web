@@ -10,7 +10,15 @@ import { priceLabel } from "@/lib/utils/format";
 // Popup sản phẩm nổi bật dưới đáy màn hình cho trang Cảm âm trên mobile -
 // thay cho thanh liên hệ (đã ẩn riêng ở MobileContactBar), cho phép thu nhỏ
 // lại thành một thanh gọn khi người dùng muốn đọc cảm âm không bị che.
-export function FeaturedProductsMobileSheet({ products }: { products: ProductSummary[] }) {
+export function FeaturedProductsMobileSheet({
+  products,
+  title = "Sản phẩm nổi bật",
+  id = "cam-am-featured-sheet",
+}: {
+  products: ProductSummary[];
+  title?: string;
+  id?: string;
+}) {
   const [expanded, setExpanded] = useState(true);
 
   if (products.length === 0) return null;
@@ -21,17 +29,17 @@ export function FeaturedProductsMobileSheet({ products }: { products: ProductSum
         type="button"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        aria-controls="cam-am-featured-sheet"
+        aria-controls={id}
         className="flex w-full items-center justify-between border-t border-border bg-paper px-4 py-3 text-xs font-semibold uppercase tracking-wide text-brass-deep"
       >
-        Sản phẩm nổi bật
+        {title}
         <span aria-hidden className={`transition-transform ${expanded ? "" : "rotate-180"}`}>
           ▾
         </span>
       </button>
 
       {expanded && (
-        <div id="cam-am-featured-sheet" className="border-t border-border bg-paper px-4 pb-4 pt-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div id={id} className="border-t border-border bg-paper px-4 pb-4 pt-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
           <div className="flex gap-3 overflow-x-auto pb-1">
             {products.map((product) => (
               <Link

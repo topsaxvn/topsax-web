@@ -38,12 +38,18 @@ export function ProductForm({
   product,
   submitLabel,
   imagesSection,
+  courses = [],
+  courseIds = [],
 }: {
   categories: Category[];
   brands: Brand[];
   product?: ProductDetail;
   submitLabel: string;
   imagesSection?: ReactNode;
+  /** Các khóa học để chọn mục "Đề xuất cho khóa học" (rỗng: không hiện mục này). */
+  courses?: { id: string; title: string }[];
+  /** Khóa học sản phẩm đang được đề xuất. */
+  courseIds?: string[];
 }) {
   const router = useRouter();
   const [slug, setSlug] = useState(product?.slug ?? "");
@@ -75,12 +81,15 @@ export function ProductForm({
     setPending(true);
     setMessage("");
     try {
+      const chosenCourses = formData.getAll("course_ids").map(String);
       if (product) {
         await productsApi.update(product.id, row.value);
+        if (courses.length) await productsApi.setCourses(product.id, chosenCourses);
         triggerRevalidate({ resource: "product", slug: row.value.slug ?? undefined });
       } else {
         const pendingImages = parsePendingImages(formData);
-        await productsApi.create(row.value, pendingImages);
+        const created = await productsApi.create(row.value, pendingImages);
+        if (chosenCourses.length) await productsApi.setCourses(created.id, chosenCourses);
         triggerRevalidate({ resource: "product" });
       }
       router.push("/admin/products");
@@ -223,6 +232,29 @@ export function ProductForm({
           </label>
         </div>
       </FormSection>
+
+      {courses.length > 0 && (
+        <FormSection title="Đề xuất cho khóa học">
+          <p className="text-sm text-muted">
+            Tích khóa học nào thì sản phẩm hiện ở mục &ldquo;Đề xuất cho khóa học&rdquo; trên trang khóa học đó: kèn cho người mới, béc,
+            dăm, phụ kiện cần có khi bắt đầu học. Sản phẩm đã bán hoặc đang ẩn sẽ không hiện.
+          </p>
+          <div className="space-y-2">
+            {courses.map((c) => (
+              <label key={c.id} className="flex items-center gap-2 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  name="course_ids"
+                  value={c.id}
+                  defaultChecked={courseIds.includes(c.id)}
+                  className="h-4 w-4"
+                />
+                {c.title}
+              </label>
+            ))}
+          </div>
+        </FormSection>
+      )}
 
       <FormSection title="Mô tả">
         <Field label="Mô tả ngắn">
