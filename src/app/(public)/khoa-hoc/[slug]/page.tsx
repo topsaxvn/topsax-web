@@ -85,6 +85,16 @@ export default async function CoursePage({
   const pieceHref = (day: number, item: string) => `${COURSE_PLAYER_PATH}?ngay=${day}&bai=${item}`;
   const previousDay = (day: number) => [...lessons].reverse().find((l) => l.day < day)?.day ?? day - 1;
   const learnHref = current ? dayHref(current.day) : COURSE_PLAYER_PATH;
+  // nút nổi ở đáy màn hình điện thoại: việc chính của người đang xem, bấm được lúc nào cũng được
+  const floating: { href: string; label: string } | null = learner
+    ? { href: learnHref, label: !current ? "Vào học" : done ? `Học tiếp: Ngày ${current.day}` : "Bắt đầu học: Ngày 1" }
+    : !user && freeCourse
+      ? { href: loginToLearn, label: "Đăng nhập bằng Google để học" }
+      : !user
+        ? { href: `${COURSE_LOGIN_PATH}?che-do=dang-ky&next=${encodeURIComponent(here)}`, label: "Đăng nhập bằng Google để mua" }
+        : canBuy
+          ? { href: "#hoc-phi", label: pendingOrder ? "Tiếp tục thanh toán" : "Xem học phí" }
+          : null;
 
   return (
     <Container className="py-10 lg:py-14">
@@ -248,7 +258,7 @@ export default async function CoursePage({
 
         {/* sticky cả cột: thẻ học phí luôn thấy, danh sách sản phẩm co lại vừa màn hình */}
         <aside className="lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-7rem)] lg:flex-col lg:gap-4 lg:self-start">
-          <div className="shrink-0 rounded-2xl border border-border bg-paper p-5 shadow-sm">
+          <div id="hoc-phi" className="shrink-0 scroll-mt-24 rounded-2xl border border-border bg-paper p-5 shadow-sm">
             {hasAccess ? (
               <>
                 <p className="text-sm text-muted">
@@ -362,8 +372,24 @@ export default async function CoursePage({
         </aside>
       </div>
 
-      {/* điện thoại: popup ở đáy màn hình, thu nhỏ được (thay thanh liên hệ) */}
-      <FeaturedProductsMobileSheet products={recs.products} title={recTitle} id="course-products-sheet" />
+      {/* điện thoại: chừa chỗ cho thanh nút nổi ở đáy để không che nội dung cuối trang */}
+      <div aria-hidden className="h-20 lg:hidden" />
+
+      {/* điện thoại: popup sản phẩm thu nhỏ được + nút học luôn nổi ở đáy (máy tính: thẻ học phí đã sticky) */}
+      <FeaturedProductsMobileSheet
+        products={recs.products}
+        title={recTitle}
+        id="course-products-sheet"
+        footer={
+          floating && (
+            <div className="border-t border-border bg-paper px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
+              <a href={floating.href} className={cn(PLAYER_BTN, "w-full shadow-sm")}>
+                {floating.label}
+              </a>
+            </div>
+          )
+        }
+      />
     </Container>
   );
 }
