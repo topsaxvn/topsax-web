@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     ".netlify/**",
+    // Màn hình học: bản build sẵn từ dự án sax-tap (JS đã nén).
+    "public/khoa-hoc/hoc/**",
   ]),
 ]);
 

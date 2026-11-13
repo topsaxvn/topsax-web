@@ -11,6 +11,11 @@ export type ProductInspectionStatus = "pending" | "in_progress" | "passed" | "fa
 export type PostStatus = "draft" | "published" | "archived";
 export type ContactMessageStatus = "new" | "contacted" | "closed";
 export type SongKeyMode = "major" | "minor";
+export type CourseStatus = "draft" | "published";
+/** notes = luyện nốt, song = bài hát, bonus = bài thêm */
+export type CourseItemKind = "notes" | "song" | "bonus";
+export type CourseOrderStatus = "pending" | "paid" | "cancelled";
+export type BankPaymentResult = "matched" | "no_code" | "no_order" | "already_paid" | "amount_low" | "no_amount";
 
 export interface Database {
   public: {
@@ -302,9 +307,194 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["songs"]["Insert"]>;
         Relationships: [];
       };
+      // Từ đây: supabase/migrations/20261110000000_admin_role_and_course.sql
+      admin_users: {
+        Row: { user_id: string; created_at: string };
+        Insert: { user_id: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["admin_users"]["Insert"]>;
+        Relationships: [];
+      };
+      courses: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          subtitle: string;
+          description: string;
+          price: number;
+          total_days: number;
+          status: CourseStatus;
+          pay_code: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          subtitle?: string;
+          description?: string;
+          price?: number;
+          total_days?: number;
+          status?: CourseStatus;
+          pay_code?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["courses"]["Insert"]>;
+        Relationships: [];
+      };
+      course_lessons: {
+        Row: {
+          id: string;
+          course_id: string;
+          day: number;
+          title: string;
+          note: string;
+          is_free: boolean;
+          is_published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          course_id: string;
+          day: number;
+          title?: string;
+          note?: string;
+          is_free?: boolean;
+          is_published?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["course_lessons"]["Insert"]>;
+        Relationships: [];
+      };
+      course_enrollments: {
+        Row: { course_id: string; user_id: string; note: string; created_by: string | null; created_at: string };
+        Insert: { course_id: string; user_id: string; note?: string; created_by?: string | null };
+        Update: Partial<Database["public"]["Tables"]["course_enrollments"]["Insert"]>;
+        Relationships: [];
+      };
+      // Từ đây: supabase/migrations/20261111000000_course_day_items.sql
+      course_items: {
+        Row: {
+          id: string;
+          lesson_id: string;
+          kind: CourseItemKind;
+          position: number;
+          title: string;
+          subtitle: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          lesson_id: string;
+          kind: CourseItemKind;
+          position?: number;
+          title?: string;
+          subtitle?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["course_items"]["Insert"]>;
+        Relationships: [];
+      };
+      course_item_content: {
+        Row: { item_id: string; score: Json; file_name: string; video_url: string; updated_at: string };
+        Insert: { item_id: string; score: Json; file_name?: string; video_url?: string };
+        Update: Partial<Database["public"]["Tables"]["course_item_content"]["Insert"]>;
+        Relationships: [];
+      };
+      course_lesson_guides: {
+        Row: { lesson_id: string; guide: string; updated_at: string };
+        Insert: { lesson_id: string; guide?: string };
+        Update: Partial<Database["public"]["Tables"]["course_lesson_guides"]["Insert"]>;
+        Relationships: [];
+      };
+      course_item_progress: {
+        Row: {
+          user_id: string;
+          item_id: string;
+          best_score: number;
+          stars: number;
+          attempts: number;
+          updated_at: string;
+        };
+        Insert: { user_id?: string; item_id: string; best_score: number; stars: number; attempts?: number };
+        Update: Partial<Database["public"]["Tables"]["course_item_progress"]["Insert"]>;
+        Relationships: [];
+      };
+      // Từ đây: supabase/migrations/20261112000000_course_orders.sql
+      course_orders: {
+        Row: {
+          id: string;
+          code: string;
+          course_id: string;
+          user_id: string;
+          buyer_name: string;
+          amount: number;
+          transfer_note: string;
+          status: CourseOrderStatus;
+          paid_at: string | null;
+          paid_by: string;
+          created_at: string;
+        };
+        Insert: Record<string, never>;
+        Update: { status?: CourseOrderStatus };
+        Relationships: [];
+      };
+      bank_payments: {
+        Row: {
+          id: number;
+          received_at: string;
+          raw: string;
+          amount: number | null;
+          codes: string[];
+          order_id: string | null;
+          result: BankPaymentResult;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      is_admin: { Args: Record<string, never>; Returns: boolean };
+      has_course_access: { Args: { p_course: string }; Returns: boolean };
+      can_open_lesson: { Args: { p_lesson: string }; Returns: boolean };
+      admin_grant_course: { Args: { p_course: string; p_email: string; p_note?: string }; Returns: string };
+      admin_course_students: {
+        Args: { p_course: string };
+        Returns: {
+          user_id: string;
+          email: string;
+          note: string;
+          granted_at: string;
+          lessons_done: number;
+          last_activity: string | null;
+        }[];
+      };
+      create_course_order: { Args: { p_course: string }; Returns: Database["public"]["Tables"]["course_orders"]["Row"] };
+      record_bank_payment: {
+        Args: { p_secret: string; p_raw: string; p_amount: number | null; p_codes: string[] };
+        Returns: { result: BankPaymentResult; order: string | null };
+      };
+      admin_rotate_bank_secret: { Args: Record<string, never>; Returns: string };
+      admin_bank_secret_created_at: { Args: Record<string, never>; Returns: string | null };
+      admin_confirm_order: { Args: { p_order: string }; Returns: undefined };
+      admin_course_orders: {
+        Args: { p_course: string };
+        Returns: {
+          id: string;
+          code: string;
+          email: string;
+          buyer_name: string;
+          amount: number;
+          transfer_note: string;
+          status: CourseOrderStatus;
+          paid_by: string;
+          created_at: string;
+          paid_at: string | null;
+        }[];
+      };
+    };
     Enums: {
       product_condition: ProductCondition;
       product_status: ProductStatus;
@@ -312,6 +502,7 @@ export interface Database {
       post_status: PostStatus;
       contact_message_status: ContactMessageStatus;
       song_key_mode: SongKeyMode;
+      course_status: CourseStatus;
     };
   };
 }

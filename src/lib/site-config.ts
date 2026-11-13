@@ -24,6 +24,7 @@ export const mainNav = [
   { label: "Saxophone", href: "/saxophone" },
   { label: "Phụ kiện", href: "/phu-kien" },
   { label: "Cảm âm", href: "/cam-am" },
+  { label: "Khóa học", href: "/khoa-hoc" },
   { label: "Blog", href: "/blog" },
   { label: "Giới thiệu", href: "/gioi-thieu" },
 ] as const;

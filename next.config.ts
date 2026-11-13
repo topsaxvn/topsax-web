@@ -13,16 +13,40 @@ const nextConfig: NextConfig = {
     loader: "custom",
     loaderFile: "./src/lib/utils/cloudinary-loader.ts",
   },
-  // Domain mặc định của hosting (topsaxvn.vercel.app, deploy preview,
-  // *.netlify.app) phục vụ y hệt nội dung domain chính - chặn index ở cấp
-  // header để Google không coi là bản trùng lặp. Không dùng redirect vì sẽ
-  // làm mất khả năng xem deploy preview.
+  // Màn hình học (app Tập Sax build tĩnh vào public/khoa-hoc/hoc, xem
+  // src/lib/course.ts): thư mục public không tự phục vụ index.html.
+  async rewrites() {
+    return [{ source: "/khoa-hoc/hoc", destination: "/khoa-hoc/hoc/index.html" }];
+  },
   async headers() {
     return [
+      // Domain mặc định của hosting (topsaxvn.vercel.app, deploy preview,
+      // *.netlify.app) phục vụ y hệt nội dung domain chính - chặn index ở cấp
+      // header để Google không coi là bản trùng lặp. Không dùng redirect vì sẽ
+      // làm mất khả năng xem deploy preview.
       {
         source: "/:path*",
         has: [{ type: "host", value: ".+\\.(?:vercel|netlify)\\.app" }],
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      // Màn hình học: JS/CSS có hash trong tên -> giữ 1 năm. Âm mẫu và font
+      // không có hash nhưng hầu như không đổi -> 30 ngày. index.html luôn hỏi
+      // lại để bản build mới tới học viên ngay.
+      {
+        source: "/khoa-hoc/hoc/assets/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/khoa-hoc/hoc/:dir(sax|inst|fonts)/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=2592000" }],
+      },
+      {
+        source: "/khoa-hoc/hoc",
+        headers: [{ key: "Cache-Control", value: "no-cache" }],
+      },
+      {
+        source: "/khoa-hoc/hoc/index.html",
+        headers: [{ key: "Cache-Control", value: "no-cache" }],
       },
     ];
   },

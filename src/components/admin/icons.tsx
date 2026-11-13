@@ -69,6 +69,16 @@ export function MusicNoteIcon(props: IconProps) {
   );
 }
 
+export function CourseIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 8.5L12 4l9 4.5-9 4.5z" />
+      <path d="M7 10.5v4.5c0 1.4 2.2 3 5 3s5-1.6 5-3v-4.5" />
+      <path d="M21 8.5v5.5" />
+    </svg>
+  );
+}
+
 export function MenuIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>

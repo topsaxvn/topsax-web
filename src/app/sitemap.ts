@@ -31,12 +31,18 @@ function latest(routes: MetadataRoute.Sitemap): Date | undefined {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createClient();
 
-  const [{ data: categories }, { data: products }, { data: posts }, { data: songs }] = await Promise.all([
+  const [{ data: categories }, { data: products }, { data: posts }, { data: songs }, { data: courses }] = await Promise.all([
     supabase.from("categories").select("id,slug,parent_id,updated_at").eq("is_active", true),
     supabase.from("products").select("slug,category_id,updated_at").neq("status", "hidden"),
     supabase.from("posts").select("slug,updated_at").eq("status", "published"),
     supabase.from("songs").select("slug,updated_at").eq("published", true),
+    supabase.from("courses").select("slug,updated_at").eq("status", "published"),
   ]);
+
+  const courseRoutes: MetadataRoute.Sitemap = (courses ?? []).map((c) => ({
+    url: `${siteConfig.url}/khoa-hoc/${c.slug}`,
+    lastModified: c.updated_at ? new Date(c.updated_at) : new Date(),
+  }));
 
   const categoryById = new Map((categories ?? []).map((c) => [c.id, c]));
 
@@ -76,8 +82,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.url}/phu-kien`, lastModified: latest(sectionRoutes("phu-kien")) },
     { url: `${siteConfig.url}/cam-am`, lastModified: latest(songRoutes) },
     { url: `${siteConfig.url}/blog`, lastModified: latest(postRoutes) },
+    ...(courseRoutes.length > 0 ? [{ url: `${siteConfig.url}/khoa-hoc`, lastModified: latest(courseRoutes) }] : []),
     { url: `${siteConfig.url}/gioi-thieu` },
+    { url: `${siteConfig.url}/chinh-sach-bao-mat` },
   ];
 
-  return [...staticRoutes, ...categoryRoutes, ...productRoutes, ...postRoutes, ...songRoutes];
+  return [...staticRoutes, ...courseRoutes, ...categoryRoutes, ...productRoutes, ...postRoutes, ...songRoutes];
 }

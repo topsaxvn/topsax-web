@@ -80,7 +80,10 @@ export function Footer() {
       <div className="border-t border-paper/10 py-5">
         <Container>
           <p className="text-xs text-paper/50">
-            © {new Date().getFullYear()} {siteConfig.name}. Đã đăng ký bản quyền.
+            © {new Date().getFullYear()} {siteConfig.name}. Đã đăng ký bản quyền. ·{" "}
+            <Link href="/chinh-sach-bao-mat" className="hover:text-paper">
+              Chính sách bảo mật
+            </Link>
           </p>
         </Container>
       </div>
